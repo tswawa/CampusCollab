@@ -98,6 +98,11 @@ for (const language of ['zh-CN', 'en'] as const) {
     try {
       await studentPage.goto(`/student/tasks/${target.id}/submit`)
       await expect(studentPage.locator('.proof-img-thumb img')).toHaveCount(1)
+      await expect.poll(async () => {
+        const navbar = await studentPage.locator('.app-navbar .van-nav-bar--fixed').boundingBox()
+        const title = await studentPage.locator('.proof-header-card h2').boundingBox()
+        return Boolean(navbar && title && Math.abs(navbar.y) < 1 && title.y >= navbar.y + navbar.height)
+      }, { message: 'The mobile header starts at the viewport top and leaves the task title visible' }).toBe(true)
       await studentPage.getByLabel(label('完成说明', 'Work description'), { exact: true }).fill('Completed the work and handed over the record to the coordinator.')
       await studentPage.getByRole('button', { name: label('提交完成凭证', 'Submit evidence'), exact: true }).click()
       await expect(studentPage.locator('.proof-form-container > p[role="alert"]')).toContainText(language === 'en' ? /deadline|closed/i : /截止/)

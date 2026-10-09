@@ -16,7 +16,7 @@ The first audit found vulnerable existing and newly resolved dependency versions
 
 On 2026-10-09, `npm audit` again reported zero known vulnerabilities with the committed lockfile. No dependencies were upgraded for publication.
 
-Default branding uses the geometric SVG and generated images described in [public/ASSETS.md](../public/ASSETS.md). The four README screenshots were captured from local instances with fictional people and activities; institution names are examples, not endorsements. Template examples contain fictional data and source links; original institutional workbooks are not redistributed. Personal reference projects, local review archives, raw logs, environment files and runtime data are excluded from Git and the corresponding source archive.
+Default branding uses the geometric SVG and generated images described in [public/ASSETS.md](../public/ASSETS.md). The README screenshots are lossless captures of local instances with fictional people and activities; institution names are examples. Template examples contain fictional data and source links; original institutional workbooks are not redistributed. Personal reference projects, local review archives, raw logs, environment files and runtime data are excluded from Git and the corresponding source archive.
 
 Keep `source.zip` from the exact running build available to its users. Review provenance when adding new third-party assets or template files.
 

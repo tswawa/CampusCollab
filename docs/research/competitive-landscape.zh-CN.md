@@ -1,6 +1,6 @@
 # 校园任务协作：竞品与开源供给研究
 
-> **历史范围：本文保留 2026-10-08 实施前的研究结论与项目状态。当前功能以 [README](../../README.md) 为准，当前许可证以 [LICENSE](../../LICENSE) 为准；下文的“尚未实现”等描述不代表当前版本。**
+> **历史范围：本文保留 2026-10-08 实施前的研究结论与项目状态。当前功能以 [README](../../README.zh-CN.md) 为准，当前许可证以 [LICENSE](../../LICENSE) 为准；下文的“尚未实现”等描述不代表当前版本。**
 
 [English](competitive-landscape.en.md) · [产品计划](../../PLAN.md) · [市场研究](market-research.zh-CN.md) · [国际采用研究](international-adoption.zh-CN.md)
 

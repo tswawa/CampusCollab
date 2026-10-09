@@ -9,13 +9,13 @@ const directories = ['src', 'server', 'shared', 'scripts', 'tests', 'public', 'd
 const files = ['package.json', 'package-lock.json', 'index.html', 'env.d.ts', 'vite.config.ts', 'playwright.config.ts',
   'tsconfig.json', 'tsconfig.app.json', 'tsconfig.node.json', 'tsconfig.server.json', 'tsconfig.test.json',
   'Dockerfile', '.dockerignore', '.gitignore', 'compose.yaml', '.node-version', '.env.example', 'LICENSE', 'NOTICE',
-  'README.md', 'README.en.md', 'PLAN.md', 'PLAN.en.md', 'CONTRIBUTING.md', 'SECURITY.md']
+  'README.md', 'README.zh-CN.md', 'PLAN.md', 'PLAN.en.md', 'CONTRIBUTING.md', 'SECURITY.md']
 const denied = new Set(['node_modules', '.git', 'data', 'uploads', 'backups', '.local', '.narrafork', 'dist', 'dist-server'])
 const localRecords = new Set(['docs/reviews', 'docs/PROJECT_CLEANUP.md', 'docs/implementation-progress.md', 'docs/planning-validation.md'])
 async function add(relative) {
   const normalized = relative.split(path.sep).join('/')
   if (localRecords.has(normalized)) return
-  if (normalized.startsWith('docs/screenshots/') && !/^docs\/screenshots\/readme-(zh|en)-(overview|workflow)\.jpg$/.test(normalized)) return
+  if (normalized.startsWith('docs/screenshots/') && !/^docs\/screenshots\/showcase-(zh|en)-(roster|review|group|export|student|admin)\.png$/.test(normalized)) return
   const absolute = path.join(root, relative)
   let stat
   try { stat = await fs.lstat(absolute) } catch (error) { if (error.code === 'ENOENT') return; throw error }

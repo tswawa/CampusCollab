@@ -1,4 +1,4 @@
-:root { --language-bar-height: 42px; --subtle: #64748b; }
+:root { --language-bar-height: 0px; --subtle: #64748b; }
 :focus-visible { outline: 3px solid #174fb5; outline-offset: 3px; }
 .skip-link { position: fixed; left: 12px; top: -100px; z-index: 6000; padding: 10px 14px; background: white; color: #174fb5; }
 .skip-link:focus { top: 8px; }

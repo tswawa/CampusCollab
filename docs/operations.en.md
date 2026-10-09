@@ -1,6 +1,6 @@
 # Deployment, use and recovery
 
-[简体中文](operations.md) · [Home](../README.en.md)
+[简体中文](operations.md) · [Home](../README.md)
 
 2026-10-08. Run one application instance against one SQLite database. Maintenance acquires an exclusive database lease; stop the application before running maintenance commands.
 

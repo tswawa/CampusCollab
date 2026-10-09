@@ -1,6 +1,6 @@
 # 部署、使用与恢复
 
-[English](operations.en.md) · [返回首页](../README.md)
+[English](operations.en.md) · [返回首页](../README.zh-CN.md)
 
 2026-10-08。当前支持一套 SQLite 数据库和一个应用实例。不要让多个实例共享数据库。维护命令会获取独占数据库租约，应先停应用再运行。
 

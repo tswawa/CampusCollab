@@ -1,60 +1,97 @@
-# 高校任务协作平台 · CampusCollab
+# CampusCollab
 
-[English](README.en.md) · [部署与使用](docs/operations.md) · [架构](docs/ARCHITECTURE.md) · [贡献说明](CONTRIBUTING.md)
+**Campus activities, from the participant list to the final report.**
 
-CampusCollab 用于管理校园任务和活动。负责人发布任务、整理名单、审核材料并确认参与时长；参与者报名、提交材料和查看结果。活动结束后，可以导出名单和已确认的材料。
+[简体中文](README.zh-CN.md) · [Run locally](#run-locally) · [Documentation](docs/README.md)
 
-每所学校独立部署，使用一套 SQLite 数据库。管理员在首次初始化时选择中文或英文，界面、系统通知和导出统一使用该语言，用户填写的正文不自动翻译。
+[![CI](https://github.com/tswawa/CampusCollab/actions/workflows/ci.yml/badge.svg)](https://github.com/tswawa/CampusCollab/actions/workflows/ci.yml)
 
-## 功能
+An activity ends, and there are still submissions to collect, corrections to follow up on, and participation hours to confirm. CampusCollab puts that work next to each participant's name.
 
-- **任务与名单**：发布个人任务或集体活动，接受报名，也可预览并导入 CSV 名单。导入名单不会创建登录账号。
-- **材料审核**：按人查看提交、提出补正、确认具体版本，保留修改和审核记录。支持 JPEG、PNG、WebP 图片。
-- **集体活动**：共用一份活动材料，分别确认每个人的结果和实际参与时长。
-- **结项导出**：导出 CSV、XLSX 名单，或包含已确认材料的 ZIP。结项后更正会生成新快照，保留原有记录。
-- **机构管理**：审批账号、交接任务负责人、设置机构信息与保存期限，可选配置邮件通知。
+Start with a CSV roster or open sign-ups. Track each person's submissions, review their work, confirm their time, and download the final records with the approved materials. Built for campus volunteer activities, student organizations, and departmental projects.
 
-## 界面
+## Find the people who need your attention
 
-以下使用中国海洋大学名称展示中文界面。人员与活动均为虚构，不代表该校使用或背书。
+The roster shows who has submitted, who needs a correction, and whose work is approved. Filter by status or search by name and ID to pick up the next item. Existing CSV lists can be previewed before import, with student IDs kept as text.
 
-**管理概览**
+![Participant roster with submission statuses and pending reviews](docs/screenshots/showcase-en-roster.png)
 
-![中文管理概览](docs/screenshots/readme-zh-overview.jpg)
+## Follow a correction through to approval
 
-**任务与参与名单**
+Open a participant's record and leave a specific request, such as “Add your actual departure time.” Their next submission appears alongside the earlier versions and your feedback. Approve the version you reviewed and enter the confirmed time. Batch review is available for submissions that are ready together.
 
-![中文任务与参与名单](docs/screenshots/readme-zh-workflow.jpg)
+![Submission review with revision history and specific correction feedback](docs/screenshots/showcase-en-review.png)
 
-## 本地运行
+## Share the activity record, confirm each person's time
 
-需要 Node.js `>=24.13.1 <25` 和 npm。在项目根目录将 `.env.example` 复制为 `.env`，然后运行：
+For group activities, the coordinator adds a shared activity record and confirms each participant's result. One volunteer might complete 90 minutes while another leaves after 75. The roster keeps those individual results, with personal submissions available where the activity requires them.
+
+![Shared activity materials and individual participation confirmation](docs/screenshots/showcase-en-group.png)
+
+## Finish with a roster and its supporting materials
+
+Close out the activity and download a CSV, an Excel workbook, or a ZIP containing the roster and approved materials. The full roster includes completed, withdrawn, and incomplete participants. Each approved record points to the material used for that decision.
+
+Later corrections create a new version of the completion record and preserve the previous one.
+
+![Completed activity with participant totals, recorded time, and export actions](docs/screenshots/showcase-en-export.png)
+
+## For participants and administrators
+
+Participants can browse tasks, sign up, submit text and images, follow correction requests, and check results from a phone or desktop. Administrators manage accounts, organizations, task ownership, notifications, and data retention.
+
+<details>
+<summary>Student view on a phone</summary>
+
+<img src="docs/screenshots/showcase-en-student.png" width="390" alt="Student submitting work on a phone" />
+
+</details>
+
+<details>
+<summary>Administrator overview</summary>
+
+![Administrator overview with pending work and recent activities](docs/screenshots/showcase-en-admin.png)
+
+</details>
+
+Each institution runs its own Node.js and SQLite instance. During setup, the administrator selects English or Chinese for the interface, system notifications, and exports.
+
+The screenshots use fictional activity data and Harvard University as an example institution name.
+
+## Run locally
+
+Requires Node.js `>=24.13.1 <25` and npm.
 
 ```sh
+git clone https://github.com/tswawa/CampusCollab.git
+cd CampusCollab
 npm ci
+```
+
+Copy `.env.example` to `.env`, then start the app:
+
+```sh
 npm run dev
 ```
 
-打开 `http://localhost:5173`。API 默认端口为 `3000`，数据库在启动时自动迁移。
+Open [localhost:5173](http://localhost:5173). The API runs on port `3000`; database migrations run at startup.
 
-首次访问会进入初始化页面，选择语言、填写机构信息和时区，并创建管理员。安装码使用 `.env` 中的 `SETUP_TOKEN`；如果留空，首次启动会在数据库旁生成安装码文件，默认是 `data/campus.sqlite.setup-token`，由部署负责人在主机上读取。初始化只需完成一次，没有默认账号或密码。
+On the first visit, choose the institution language, enter its details and time zone, and create the administrator account. Use the setup code from `SETUP_TOKEN` in `.env`, or read the generated `data/campus.sqlite.setup-token` file on the host when that setting is empty.
 
-也可以先执行 `npm run build`，再在应用停止时用 `npm run admin:init` 进行终端初始化。
+## Deploy
 
-## 部署
-
-使用单个 Node.js 实例运行。先在 `.env` 中设置 `NODE_ENV=production`、实际的 HTTPS `APP_ORIGIN`，以及数据库、图片和备份的独立持久路径，再执行：
+Configure `.env` with `NODE_ENV=production`, the public HTTPS `APP_ORIGIN`, and persistent database, upload, and backup paths. Then run:
 
 ```sh
 npm run build
 npm start
 ```
 
-服务默认监听 `127.0.0.1:3000`，通过反向代理提供 HTTPS。配置、备份、升级和恢复步骤见[部署与使用](docs/operations.md)。
+The server listens on `127.0.0.1:3000` by default. Use a reverse proxy for HTTPS. The [operations guide](docs/operations.en.md) covers configuration, backup, upgrades, and recovery.
 
-## 开发
+## Development
 
-前端使用 Vue 3、Pinia 和 Vant，后端使用 Fastify 与 Node 内置 SQLite。
+Vue 3, Pinia, and Vant on the frontend; Fastify and Node's built-in SQLite on the backend.
 
 ```sh
 npm run type-check
@@ -64,13 +101,12 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Playwright 的 Chromium 只需在首次运行浏览器测试时安装。
+- [Architecture and scope](docs/ARCHITECTURE.md#english-summary)
+- [Contributing](CONTRIBUTING.md)
+- [Product plan and research](PLAN.en.md)
+- [Test coverage](docs/verification.md#english)
+- [Security reporting](SECURITY.md)
 
-- [架构与项目边界](docs/ARCHITECTURE.md)
-- [贡献说明](CONTRIBUTING.md)
-- [安全问题报告](SECURITY.md)
-- [文档索引](docs/README.md)
+## License
 
-## 许可证
-
-采用 [AGPL-3.0-only](LICENSE)。项目基于 ZVMS4 前端开发，保留[上游 MIT 版权和许可声明](LICENSES/ZVMS-MIT.txt)，详见 [NOTICE](NOTICE)。生产构建附带对应源码包 `/source.zip`。
+[AGPL-3.0-only](LICENSE). CampusCollab is derived from the ZVMS4 frontend and retains its [MIT copyright and permission notice](LICENSES/ZVMS-MIT.txt). See [NOTICE](NOTICE). Production builds include the corresponding source archive at `/source.zip`.

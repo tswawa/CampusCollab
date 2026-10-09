@@ -49,7 +49,5 @@ coverage
 /docs/implementation-progress.md
 /docs/planning-validation.md
 /docs/screenshots/*
-!/docs/screenshots/readme-zh-overview.jpg
-!/docs/screenshots/readme-zh-workflow.jpg
-!/docs/screenshots/readme-en-overview.jpg
-!/docs/screenshots/readme-en-workflow.jpg
+!/docs/screenshots/showcase-en-*.png
+!/docs/screenshots/showcase-zh-*.png
