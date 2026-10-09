@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "checkedDate": "2026-10-08",
+  "validation": "Official notices read; no original attachment obtained or field-level compatibility claim made.",
+  "sources": [
+    {
+      "institution": { "zh-CN": "南京大学外国语学院", "en": "Nanjing University School of Foreign Studies" },
+      "pageUrl": "https://sfs.nju.edu.cn/dqjs/tw/20260420/i382529.html",
+      "publishedDate": "2026-04-20",
+      "status": "original-file-not-obtained",
+      "fileUrl": null,
+      "sha256": null,
+      "maintainerStatus": "unassigned",
+      "reason": { "zh-CN": "通知提到附件 1、2，取得的公开页面未提供可验证的附件下载链接。", "en": "The notice refers to attachments 1 and 2; the retrieved public page did not provide a verifiable attachment download link." },
+      "nextEvidence": { "zh-CN": "官方空白原表、版本及维护部门确认。", "en": "Official blank source files, versions and confirmation from the responsible department." }
+    },
+    {
+      "institution": { "zh-CN": "山东大学研究生之家", "en": "Shandong University graduate student portal" },
+      "pageUrl": "https://ygb.sdu.edu.cn/info/1223/19702.htm",
+      "publishedDate": "2025-10-15",
+      "status": "original-file-not-obtained",
+      "fileUrl": null,
+      "sha256": null,
+      "maintainerStatus": "unassigned",
+      "reason": { "zh-CN": "工作细则公开，先前附件访问遇到登录要求；本轮没有取得可审阅原表，不推断受限附件内容。", "en": "The rules are public; an earlier attachment retrieval required login. No reviewable original form was obtained, and restricted contents are not inferred." },
+      "nextEvidence": { "zh-CN": "由有权持有者提供可审阅的空白模板及版本依据。", "en": "A reviewable blank template and version evidence supplied by an authorized holder." }
+    }
+  ]
+}

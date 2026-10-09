@@ -1,0 +1,55 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+.DS_Store
+dist
+dist-ssr
+coverage
+*.local
+.env
+.env.*
+!.env.example
+*.setup-token
+/data/
+/dist-server/
+/test-results/
+/playwright-report/
+
+/cypress/videos/
+/cypress/screenshots/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local archives, personal design sources and iteration evidence
+/.local/
+/.narrafork/
+/original_demo/
+/reference_demo/
+/.narrafork-clear-blue-welcome.png
+/校园任务协作系统 (4).zip
+
+# Local review records; public verification is in docs/verification.md
+/docs/reviews/
+/docs/PROJECT_CLEANUP.md
+/docs/implementation-progress.md
+/docs/planning-validation.md
+/docs/screenshots/*
+!/docs/screenshots/readme-zh-overview.jpg
+!/docs/screenshots/readme-zh-workflow.jpg
+!/docs/screenshots/readme-en-overview.jpg
+!/docs/screenshots/readme-en-workflow.jpg

@@ -1,0 +1,19 @@
+Campus Task Collaboration
+Application changes dated 2026-10-08 are distributed under AGPL-3.0-only.
+No warranty is provided; see LICENSE.
+
+This application is derived from ZVMS4 frontend, Copyright (c) 2023 zvms.
+The original MIT copyright and permission notice is retained verbatim in
+LICENSES/ZVMS-MIT.txt. That notice continues to apply to the upstream work.
+
+Third-party packages retain their own licenses. Their package license files
+are distributed with node_modules in the runtime. package-lock.json identifies
+the exact dependency tree. See docs/dependency-review.md for review notes.
+
+The production build includes source.zip and LICENSE.txt. The source archive
+is generated from an explicit source allowlist; it excludes environment files,
+credentials, runtime data, uploads, Git history and node_modules. Keep the
+source archive from the same build available to users of that deployment.
+
+Institutional names in research documents identify public sources and do not
+imply endorsement, adoption or certification of this application.

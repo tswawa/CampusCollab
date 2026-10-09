@@ -1,0 +1,67 @@
+{
+  "fixtureVersion": 1,
+  "description": "Entirely fictional acceptance fixture. No person or identifier is copied from the original workbook.",
+  "input": {
+    "templateId": "hfut-volunteer-hours-2018",
+    "templateVersion": 1,
+    "metadata": {
+      "reporterName": "示例负责人 / Demo Coordinator",
+      "reporterStudentNumber": "00000001",
+      "reportingUnit": "虚构学院 / Fictional Department",
+      "serviceLocation": "示例校园花园 / Example Campus Garden",
+      "serviceDate": "2026-10-08",
+      "travelRecord": "Example A: 09:30-09:45 outbound, 12:00-12:15 return (30 min). Example B: 09:15-09:45 outbound, 12:00-12:30 return (60 min). Fictional example.",
+      "serviceTimeRange": "10:00-12:00"
+    },
+    "metadataSourceReference": "fictional:activity-record-001",
+    "totalPolicy": "documented-threshold",
+    "policyConfirmation": {
+      "confirmedBy": "fictional:coordinator-001",
+      "confirmedAt": "2026-10-08T08:00:00.000Z",
+      "reason": "Fictional test selects the H1 threshold; no institutional acceptance claimed.",
+      "acknowledgedAmbiguity": true
+    },
+    "rows": [
+      {
+        "participantId": "fictional:participant-001",
+        "externalId": "000001",
+        "name": "示例甲 / Example A",
+        "confirmedMinutes": 120,
+        "travelMinutes": 30,
+        "sourceReference": "fictional:snapshot-001/participant-001/approved-revision-2",
+        "travelSourceReference": "fictional:travel-log-001/participant-001"
+      },
+      {
+        "participantId": "fictional:participant-002",
+        "externalId": "000002",
+        "name": "示例乙 / Example B",
+        "confirmedMinutes": 90,
+        "travelMinutes": 60,
+        "sourceReference": "fictional:snapshot-001/participant-002/approved-revision-1",
+        "travelSourceReference": "fictional:travel-log-001/participant-002"
+      }
+    ]
+  },
+  "expected": {
+    "sourceSha256": "5102bd275a962545252bf5f8b4398ba2e731a48ef6c21bcfd9e1d3539e2dab1f",
+    "compatibility": "historical-field-mapping",
+    "currentInstitutionalAcceptance": "unverified",
+    "unit": "hours",
+    "headers": ["序号", "学号", "姓名", "实际服务时长", "车程时长", "总时长"],
+    "metadataCells": {
+      "B2": "示例负责人 / Demo Coordinator/00000001",
+      "E2": "虚构学院 / Fictional Department",
+      "B3": "示例校园花园 / Example Campus Garden",
+      "F3": "2026-10-08",
+      "B4": "Example A: 09:30-09:45 outbound, 12:00-12:15 return (30 min). Example B: 09:15-09:45 outbound, 12:00-12:30 return (60 min). Fictional example.",
+      "F4": "10:00-12:00"
+    },
+    "rows": [
+      { "targetRow": 6, "participantId": "fictional:participant-001", "values": [1, "000001", "示例甲 / Example A", 2, 0.5, 2], "totalMinutes": 120 },
+      { "targetRow": 7, "participantId": "fictional:participant-002", "values": [2, "000002", "示例乙 / Example B", 1.5, 1, 2], "totalMinutes": 120 }
+    ],
+    "originalFormulaTotalsMinutes": [135, 120],
+    "manualConfirmedTotalsMinutes": [125.5, 0],
+    "warningCodes": ["TRAVEL_THRESHOLD_FORMULA_CONFLICT", "HISTORICAL_ACCEPTANCE_UNVERIFIED", "HOURS_UNIT_INFERRED_FROM_SOURCE"]
+  }
+}
