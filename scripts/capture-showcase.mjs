@@ -12,7 +12,7 @@ import { Temporal } from '@js-temporal/polyfill'
 // Optional positional arguments restrict output, e.g. `student admin`.
 const project = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const only = new Set(process.argv.slice(2))
-for (const kind of only) if (!['roster', 'review', 'group', 'export', 'student', 'admin'].includes(kind)) throw new Error(`Unknown screenshot kind: ${kind}`)
+for (const kind of only) if (!['roster', 'review', 'group', 'export', 'student', 'admin', 'login', 'teacher', 'create', 'create-rules', 'create-preview', 'student-home', 'hall', 'detail', 'submit'].includes(kind)) throw new Error(`Unknown screenshot kind: ${kind}`)
 const output = path.join(project, 'docs/screenshots')
 const scratch = path.join(project, '.local/showcase-capture')
 await fs.access(path.join(project, 'dist/index.html'))
@@ -123,6 +123,90 @@ async function capture(page, locale, kind, options = {}) {
   console.log(`${filename} ${page.url().replace(/^https?:\/\/[^/]+/, '')}`)
 }
 
+async function loginByForm(page, locale, account, password, captureLogin = false) {
+  const en = locale === 'en'; const t = (zh, english) => en ? english : zh
+  await page.goto('/login')
+  const accountField = page.getByLabel(t('登录账号', 'Account'), { exact: true })
+  const passwordField = page.getByLabel(t('登录密码', 'Password'), { exact: true })
+  await expect(accountField).toBeVisible()
+  await accountField.fill(account)
+  if (captureLogin) await capture(page, locale, 'login', { locator: page.locator('.auth-shell') })
+  await passwordField.fill(password)
+  await page.getByRole('button', { name: t('登 录', 'Sign in'), exact: true }).click()
+  await expect(page).toHaveURL(/\/(teacher|student|admin)\/home$/)
+}
+
+async function captureRoleTour(browser, origin, locale, password) {
+  const en = locale === 'en'; const t = (zh, english) => en ? english : zh
+  const viewport = { width: 560, height: 1050 }
+  const title = t('校园开放日 · 上午引导', 'Campus Open Day · Morning welcome')
+  const date = Temporal.Now.zonedDateTimeISO(en ? 'America/New_York' : 'Asia/Shanghai').toPlainDate().add({ days: 5 }).toString()
+  const teacherContext = await browser.newContext({ baseURL: origin, viewport, deviceScaleFactor: 2, locale: en ? 'en-US' : 'zh-CN', timezoneId: en ? 'America/New_York' : 'Asia/Shanghai' })
+  const teacherPage = await teacherContext.newPage()
+  try {
+    await loginByForm(teacherPage, locale, 'SHOWCOORD', password, true)
+    await expect(teacherPage).toHaveURL(/\/teacher\/home$/)
+    await capture(teacherPage, locale, 'teacher', { locator: teacherPage.locator('.teacher-home-page') })
+    await teacherPage.goto('/teacher/create')
+    await expect(teacherPage.locator('.create-task-page')).toBeVisible()
+    await teacherPage.getByLabel(t('任务名称', 'Task name'), { exact: true }).fill(title)
+    await teacherPage.getByLabel(t('任务分类', 'Task category'), { exact: true }).selectOption({ label: t('活动协助', 'Events') })
+    await teacherPage.getByLabel(t('所在校区', 'Campus'), { exact: true }).selectOption({ label: t('主校区', 'Main campus') })
+    await teacherPage.getByLabel(t('具体地点', 'Location'), { exact: true }).fill(t('图书馆前厅', 'Library atrium'))
+    await teacherPage.getByLabel(t('任务说明', 'Task description'), { exact: true }).fill(t('协助访客签到、路线引导与资料交接，活动后记录实际参与时长。', 'Welcome visitors, guide campus routes and hand over materials; record the actual time after the shift.'))
+    await teacherPage.getByLabel(t('工作清单', 'Checklist'), { exact: true }).fill(t('核对签到人数\n完成岗位交接\n归还导览资料', 'Count visitor check-ins\nComplete the shift handover\nReturn guide packs'))
+    await capture(teacherPage, locale, 'create', { locator: teacherPage.locator('.create-task-page') })
+    await teacherPage.getByRole('button', { name: t('下一步', 'Next'), exact: true }).click()
+    await teacherPage.getByLabel(t('任务日期', 'Task date'), { exact: true }).fill(date)
+    await teacherPage.getByLabel(t('开始时间', 'Start time'), { exact: true }).fill('09:00')
+    await teacherPage.getByLabel(t('结束时间', 'End time'), { exact: true }).fill('11:30')
+    await teacherPage.getByLabel(t('报名截止', 'Sign-up deadline'), { exact: true }).fill(`${date}T08:30`)
+    await teacherPage.getByLabel(t('预计耗时', 'Estimated duration'), { exact: true }).fill(t('约 2.5 小时', 'About 2.5 hours'))
+    await teacherPage.getByLabel(t('招募人数', 'Capacity'), { exact: true }).locator('input').fill('6')
+    await capture(teacherPage, locale, 'create-rules', { locator: teacherPage.locator('.create-task-page') })
+    await teacherPage.getByRole('button', { name: t('下一步', 'Next'), exact: true }).click()
+    await teacherPage.getByRole('button', { name: t('下一步', 'Next'), exact: true }).click()
+    await expect(teacherPage.getByRole('button', { name: t('确认发布任务', 'Publish task'), exact: true })).toBeVisible()
+    await capture(teacherPage, locale, 'create-preview', { locator: teacherPage.locator('.create-task-page') })
+    await teacherPage.getByRole('button', { name: t('确认发布任务', 'Publish task'), exact: true }).click()
+    await expect(teacherPage).toHaveURL(/\/tasks\/[^/]+\/workflow$/)
+    const taskId = teacherPage.url().match(/\/tasks\/([^/]+)\/workflow$/)?.[1]
+    if (!taskId) throw new Error('Published task id was not present in the workflow URL')
+    await teacherContext.close()
+
+    const studentContext = await browser.newContext({ baseURL: origin, viewport, deviceScaleFactor: 2, locale: en ? 'en-US' : 'zh-CN', timezoneId: en ? 'America/New_York' : 'Asia/Shanghai' })
+    const studentPage = await studentContext.newPage()
+    try {
+      await loginByForm(studentPage, locale, 'SHOWSTUDENT', password)
+      await expect(studentPage).toHaveURL(/\/student\/home$/)
+      await capture(studentPage, locale, 'student-home', { locator: studentPage.locator('.student-home-page') })
+      await studentPage.goto('/student/tasks')
+      const search = studentPage.getByPlaceholder(t('搜索任务、地点或发布老师', 'Search tasks, locations or coordinators'))
+      await search.fill(title)
+      const card = studentPage.locator('.campus-task-card').filter({ hasText: title })
+      await expect(card).toBeVisible()
+      await capture(studentPage, locale, 'hall', { locator: studentPage.locator('.task-hall-page') })
+      await card.click()
+      await expect(studentPage).toHaveURL(new RegExp(`/tasks/${taskId}$`))
+      await expect(studentPage.locator('.task-detail-container h1')).toHaveText(title)
+      await expect(studentPage.getByRole('button', { name: t('立即接取任务', 'Join task'), exact: true })).toBeVisible()
+      await capture(studentPage, locale, 'detail')
+      await studentPage.getByRole('button', { name: t('立即接取任务', 'Join task'), exact: true }).click()
+      await expect(studentPage.getByRole('button', { name: t('开始任务', 'Start task'), exact: true })).toBeVisible()
+      await studentPage.getByRole('button', { name: t('开始任务', 'Start task'), exact: true }).click()
+      await expect(studentPage.getByRole('button', { name: t('提交完成凭证', 'Submit evidence'), exact: true })).toBeVisible()
+      await studentPage.goto(`/student/tasks/${taskId}/submit`)
+      await expect(studentPage.locator('.proof-form-container')).toBeVisible()
+      await studentPage.getByLabel(t('自报分钟数', 'Self-reported minutes'), { exact: true }).fill('150')
+      await studentPage.getByLabel(t('完成说明', 'Work description'), { exact: true }).fill(t('完成 42 位访客签到、路线引导和资料交接，岗位记录已交给下一班负责人。', 'Checked in 42 visitors, guided campus routes and handed the guide packs to the next shift coordinator.'))
+      await studentPage.getByLabel(t('补充备注', 'Additional notes'), { exact: true }).fill(t('09:00—11:30，交接完成。', '09:00–11:30; handover complete.'))
+      await capture(studentPage, locale, 'submit')
+    } finally { await studentContext.close() }
+  } finally {
+    await teacherContext.close()
+  }
+}
+
 const browser = await chromium.launch({ headless: true })
 try {
   for (const locale of ['en', 'zh-CN']) {
@@ -144,6 +228,7 @@ try {
       await createAdminManagedUser(built.db, { role: 'teacher', account: 'SHOWPENDING', name: t('陈老师', 'Morgan Chen'), departmentId: 'dept-fl', approval: 'pending', password })
       const sample = seed(built.db, teacher, student, locale)
       await built.app.listen({ host: '127.0.0.1', port })
+      await captureRoleTour(browser, origin, locale, password)
       context = await browser.newContext({ baseURL: origin, viewport: { width: 1440, height: 1050 }, deviceScaleFactor: 2, locale: en ? 'en-US' : 'zh-CN', timezoneId: en ? 'America/New_York' : 'Asia/Shanghai' })
       context.setDefaultTimeout(15_000)
       let page = await context.newPage()
@@ -203,7 +288,7 @@ try {
       page = await context.newPage()
       await login(page, 'SHOWADMIN', password)
       await page.goto('/admin/home')
-      await expect(page.locator('.admin-dashboard-task')).toHaveCount(4)
+      await expect(page.locator('.admin-dashboard-task')).toHaveCount(5)
       const adminCards = await page.locator('.admin-dashboard-columns').boundingBox()
       await capture(page, locale, 'admin', { clip: { x: 224, y: 64, width: 1216, height: Math.ceil(adminCards.y + adminCards.height + 24 - 64) } })
     } finally {

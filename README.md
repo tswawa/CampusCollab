@@ -1,60 +1,110 @@
 # CampusCollab
 
-**Campus activities, from the participant list to the final report.**
+**Publish campus tasks. Let students join. Review the work.**
 
 [简体中文](README.zh-CN.md) · [Run locally](#run-locally) · [Documentation](docs/README.md)
 
 [![CI](https://github.com/tswawa/CampusCollab/actions/workflows/ci.yml/badge.svg)](https://github.com/tswawa/CampusCollab/actions/workflows/ci.yml)
 
-An activity ends, and there are still submissions to collect, corrections to follow up on, and participation hours to confirm. CampusCollab puts that work next to each participant's name.
+CampusCollab connects teachers who organize campus work with students who take part. Teachers publish tasks and set participation and submission requirements. Students find tasks, join, and submit their results. Teachers review the work, confirm participation time, and export the final records.
 
-Start with a CSV roster or open sign-ups. Track each person's submissions, review their work, confirm their time, and download the final records with the approved materials. Built for campus volunteer activities, student organizations, and departmental projects.
+Each institution hosts its own instance and chooses English or Chinese during setup.
 
-## Find the people who need your attention
+| Role | Workspace | Main actions |
+| --- | --- | --- |
+| Teacher / coordinator | Coordinator workspace | Publish tasks, manage participants, review submissions, export results |
+| Student / participant | Participant home and task hall | Find tasks, sign up, track progress, submit work |
+| Administrator | Admin console | Approve accounts, manage organizations and settings, transfer task ownership |
 
-The roster shows who has submitted, who needs a correction, and whose work is approved. Filter by status or search by name and ID to pick up the next item. Existing CSV lists can be previewed before import, with student IDs kept as text.
+## 1. Sign in and open your workspace
 
-![Participant roster with submission statuses and pending reviews](docs/screenshots/showcase-en-roster.png)
+Sign in with your account. CampusCollab opens the workspace assigned to your role.
 
-## Follow a correction through to approval
+<img src="docs/screenshots/showcase-en-login.png" width="420" alt="CampusCollab sign-in form" />
 
-Open a participant's record and leave a specific request, such as “Add your actual departure time.” Their next submission appears alongside the earlier versions and your feedback. Approve the version you reviewed and enter the confirmed time. Batch review is available for submissions that are ready together.
+Teachers land on a workspace with a **Publish task** entry, task counts, and pending reviews. Students see their participation progress and links to available tasks.
 
-![Submission review with revision history and specific correction feedback](docs/screenshots/showcase-en-review.png)
+<table>
+<tr><th>Teacher / coordinator</th><th>Student / participant</th></tr>
+<tr>
+<td><img src="docs/screenshots/showcase-en-teacher.png" width="420" alt="Coordinator home with the publish task entry and current tasks" /></td>
+<td><img src="docs/screenshots/showcase-en-student-home.png" width="420" alt="Participant home with personal progress and available tasks" /></td>
+</tr>
+</table>
 
-## Share the activity record, confirm each person's time
+## 2. Publish a task
 
-For group activities, the coordinator adds a shared activity record and confirms each participant's result. One volunteer might complete 90 minutes while another leaves after 75. The roster keeps those individual results, with personal submissions available where the activity requires them.
+Enter the task name, work description, location, and checklist. Choose an individual task or a group activity, then set the dates, places available, participation method, and required materials.
 
-![Shared activity materials and individual participation confirmation](docs/screenshots/showcase-en-group.png)
+The four-step form takes the coordinator through task details, scheduling and evidence, contact details, and a final preview.
 
-## Finish with a roster and its supporting materials
-
-Close out the activity and download a CSV, an Excel workbook, or a ZIP containing the roster and approved materials. The full roster includes completed, withdrawn, and incomplete participants. Each approved record points to the material used for that decision.
-
-Later corrections create a new version of the completion record and preserve the previous one.
-
-![Completed activity with participant totals, recorded time, and export actions](docs/screenshots/showcase-en-export.png)
-
-## For participants and administrators
-
-Participants can browse tasks, sign up, submit text and images, follow correction requests, and check results from a phone or desktop. Administrators manage accounts, organizations, task ownership, notifications, and data retention.
+![Coordinator filling in a new campus task](docs/screenshots/showcase-en-create.png)
 
 <details>
-<summary>Student view on a phone</summary>
+<summary>Participation settings and the final publishing preview</summary>
 
-<img src="docs/screenshots/showcase-en-student.png" width="390" alt="Student submitting work on a phone" />
+![Task dates, capacity, participation method, and required materials](docs/screenshots/showcase-en-create-rules.png)
+
+![Final task preview before publishing](docs/screenshots/showcase-en-create-preview.png)
+
+</details>
+
+## 3. Students find a task and join
+
+The task hall lets students browse, search, and filter available work. Opening a task shows the schedule, location, requirements, and available places.
+
+![Student task hall with available campus tasks](docs/screenshots/showcase-en-hall.png)
+
+<img src="docs/screenshots/showcase-en-detail.png" width="520" alt="Published task details with the action to join" />
+
+A task can accept participants directly or collect applications for the coordinator to approve. Joined tasks appear in the student's own task list.
+
+## 4. Submit the work
+
+Students enter what they completed, record their time, and attach images where required. Here is the submission page for the task published above.
+
+<img src="docs/screenshots/showcase-en-submit.png" width="420" alt="Student submitting the work for the task published in this walkthrough" />
+
+## 5. Review participants and follow up
+
+The coordinator's roster shows who has submitted, who needs a correction, and whose work is approved. Filter by status or search by name and ID. Existing CSV rosters can also be previewed and imported.
+
+![Coordinator roster with submissions, corrections, and confirmed participation](docs/screenshots/showcase-en-roster.png)
+
+A review can ask for a specific missing detail, such as the actual departure time. Each resubmission retains the earlier version and feedback. The coordinator approves a version and records the confirmed time; ready submissions can be reviewed in batches.
+
+<details>
+<summary>Submission versions and correction feedback</summary>
+
+![Revision comparison, feedback, and confirmed participation time](docs/screenshots/showcase-en-review.png)
 
 </details>
 
 <details>
-<summary>Administrator overview</summary>
+<summary>Shared materials for a group activity</summary>
 
-![Administrator overview with pending work and recent activities](docs/screenshots/showcase-en-admin.png)
+For group activities, the coordinator adds a shared activity record and confirms each person's result and time. Personal submissions can be required alongside the shared record.
+
+![Shared activity record and individual confirmation](docs/screenshots/showcase-en-group.png)
 
 </details>
 
-Each institution runs its own Node.js and SQLite instance. During setup, the administrator selects English or Chinese for the interface, system notifications, and exports.
+## 6. Close out and export
+
+Download a CSV, an Excel workbook, or a ZIP containing the roster and approved materials. The roster preserves completed, withdrawn, and incomplete outcomes. Later corrections create a new completion version and retain the earlier record.
+
+![Completion record with participant results and ZIP, XLSX, and CSV downloads](docs/screenshots/showcase-en-export.png)
+
+## Administration
+
+Administrators approve accounts, manage organizations and institution settings, transfer task ownership, and handle notifications and data retention.
+
+<details>
+<summary>Open the administrator overview</summary>
+
+![Administrator overview with pending accounts, submissions, and recent tasks](docs/screenshots/showcase-en-admin.png)
+
+</details>
 
 The screenshots use fictional activity data and Harvard University as an example institution name.
 

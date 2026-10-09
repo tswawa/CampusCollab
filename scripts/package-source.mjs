@@ -15,7 +15,7 @@ const localRecords = new Set(['docs/reviews', 'docs/PROJECT_CLEANUP.md', 'docs/i
 async function add(relative) {
   const normalized = relative.split(path.sep).join('/')
   if (localRecords.has(normalized)) return
-  if (normalized.startsWith('docs/screenshots/') && !/^docs\/screenshots\/showcase-(zh|en)-(roster|review|group|export|student|admin)\.png$/.test(normalized)) return
+  if (normalized.startsWith('docs/screenshots/') && !/^docs\/screenshots\/showcase-(zh|en)-(roster|review|group|export|student|admin|login|teacher|create|create-rules|create-preview|student-home|hall|detail|submit)\.png$/.test(normalized)) return
   const absolute = path.join(root, relative)
   let stat
   try { stat = await fs.lstat(absolute) } catch (error) { if (error.code === 'ENOENT') return; throw error }
