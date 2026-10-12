@@ -297,8 +297,9 @@ async function retry() {
                 maxlength="256"
                 autocomplete="off"
                 spellcheck="false"
-                aria-describedby="setup-token-hint"
-              /><small id="setup-token-hint">{{ copy.tokenHint }}</small></label
+                aria-describedby="setup-token-hint setup-token-location"
+              /><small id="setup-token-hint">{{ copy.tokenHint }}</small>
+              <small id="setup-token-location">{{ copy.tokenLocation }}</small></label
             >
           </div>
           <p v-else class="setup-hint" role="status">{{ copy.saved }}</p>

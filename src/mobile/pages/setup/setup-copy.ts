@@ -28,6 +28,7 @@ export const setupCopy = {
     passwordHint: '8—128 位，包含字母、数字或符号中的至少两类。',
     token: '部署安装码',
     tokenHint: '请向部署负责人获取安装码。',
+    tokenLocation: '安装码在服务器上：数据库文件旁的 .setup-token 文件，或 .env 中的 SETUP_TOKEN。',
     next: '下一步',
     back: '上一步',
     submit: '创建工作空间',
@@ -74,6 +75,8 @@ export const setupCopy = {
     passwordHint: '8–128 characters, using at least two of letters, numbers and symbols.',
     token: 'Deployment setup code',
     tokenHint: 'Get the setup code from the deployment owner.',
+    tokenLocation:
+      'Find the setup code on the server: in the .setup-token file beside the database, or SETUP_TOKEN in .env.',
     next: 'Continue',
     back: 'Back',
     submit: 'Create workspace',

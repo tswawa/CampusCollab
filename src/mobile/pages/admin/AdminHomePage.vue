@@ -54,6 +54,26 @@ const recentTasks = computed(() => taskStore.dashboard?.recentTasks ?? [])
   <div class="admin-module-page admin-overview-page">
     <LoadState :loading="loading" :error="error" @retry="reload" />
     <template v-if="ready && !error">
+      <section v-if="stats.tasks === 0" class="admin-table-card" style="margin-bottom: 20px">
+        <div class="admin-card-heading">
+          <h2>{{ msg('开始使用') }}</h2>
+        </div>
+        <ol style="margin: 0; padding: 0 20px 16px 40px">
+          <li>
+            <RouterLink to="/admin/organization" class="admin-inline-link">{{
+              msg('检查组织架构：预置的学院、年级和班级是示例数据，请改成本校的实际数据')
+            }}</RouterLink>
+          </li>
+          <li>
+            <RouterLink to="/admin/settings" class="admin-inline-link">{{ msg('设置注册方式与机构信息') }}</RouterLink>
+          </li>
+          <li>
+            <RouterLink to="/admin/accounts" class="admin-inline-link">{{
+              msg('邀请教师注册，或在账号管理中创建账号')
+            }}</RouterLink>
+          </li>
+        </ol>
+      </section>
       <section class="admin-dashboard-stat-grid" :aria-label="msg('系统概览')">
         <button
           v-for="metric in metrics"

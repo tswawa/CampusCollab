@@ -171,6 +171,13 @@ export function fullTaskTime(task: CampusTask): string {
   return `${formatDate(task.date)} ${task.startTime}–${task.endTime}`
 }
 
+export function formatTaskDuration(minutes: number): string {
+  if (!Number.isFinite(minutes) || minutes <= 0) return ''
+  return minutes >= 60
+    ? msg('约 {p0} 小时', { p0: Math.round((minutes / 60) * 10) / 10 })
+    : msg('约 {p0} 分钟', { p0: minutes })
+}
+
 export function isTaskVisible(task: CampusTask, user: CampusUser): boolean {
   if (user.role === 'teacher') return task.teacherId === user.id
   if (task.audienceScope === 'school') return true

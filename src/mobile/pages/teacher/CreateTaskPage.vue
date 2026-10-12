@@ -7,6 +7,7 @@ import { useAuthStore } from '@/mobile/stores/auth'
 import { useCatalogStore } from '@/mobile/stores/catalog'
 import { useTaskStore } from '@/mobile/stores/tasks'
 import { dateOffset, zonedLocalToInstant } from '@/mobile/utils/date'
+import { formatTaskDuration } from '@/mobile/utils/task'
 import { useLoad, useMutation } from '@/mobile/api/ui'
 import LoadState from '@/mobile/components/LoadState.vue'
 import { request } from '@/mobile/api'
@@ -25,6 +26,7 @@ const teacher = computed(() => auth.currentUser!)
 const step = ref(1)
 const { busy: publishing, error: publishError, run } = useMutation()
 const validationError = ref('')
+const plannedMinutesEdited = ref(false)
 let copied = ''
 const { loading, error, reload } = useLoad(
   async signal => {
@@ -49,6 +51,7 @@ const { loading, error, reload } = useLoad(
         contacts: source.contacts.map(c => ({ ...c }))
       })
       const { templateId, templateVersion, mode, plannedMinutes, personalSubmissionRequired } = flow.data.config
+      plannedMinutesEdited.value = true
       Object.assign(workflowConfig, {
         templateId,
         templateVersion,
@@ -87,7 +90,7 @@ const form = reactive({
   startTime: '14:00',
   endTime: '16:00',
   signupDeadline: `${dateOffset(1)}T12:00`,
-  duration: msg('约 2 小时'),
+  duration: formatTaskDuration(120),
   capacity: 2,
   audienceScope: 'department' as AudienceScope,
   audienceValue: teacher.value?.departmentId ?? catalog.activeDepartments[0]?.id ?? '',
@@ -95,6 +98,22 @@ const form = reactive({
   claimMode: 'direct' as ClaimMode,
   contacts: [] as ContactItem[]
 })
+
+const scheduledMinutes = computed(() => {
+  const [startHour, startMinute] = form.startTime.split(':').map(Number)
+  const [endHour, endMinute] = form.endTime.split(':').map(Number)
+  return endHour * 60 + endMinute - startHour * 60 - startMinute
+})
+watch(
+  scheduledMinutes,
+  minutes => {
+    form.duration = formatTaskDuration(minutes)
+    if (!plannedMinutesEdited.value) {
+      workflowConfig.plannedMinutes = Number.isFinite(minutes) && minutes > 0 ? minutes : null
+    }
+  },
+  { immediate: true }
+)
 
 const categories = computed(() => catalog.activeTaskCategories)
 const campuses = computed(() => catalog.activeCampuses)
@@ -133,7 +152,7 @@ const availableContactTypes = computed<Array<{ type: ContactMethodType; label: s
 function addContactItem() {
   if (!newContactValue.value.trim()) {
     showToast(msg('请输入联系方式内容'))
-    return
+    return false
   }
   const typeObj = availableContactTypes.value.find(t => t.type === newContactType.value)
   form.contacts.push({
@@ -143,6 +162,7 @@ function addContactItem() {
   })
   newContactValue.value = ''
   showToast(msg('已添加联系方式'))
+  return true
 }
 
 function removeContactItem(index: number) {
@@ -169,11 +189,18 @@ function validateStep(currentStep = step.value): string {
     if (!Number.isInteger(form.capacity) || form.capacity < 1 || form.capacity > 10000)
       return msg('招募人数须为 1 至 10000 的整数')
     if (form.proofTypes.length === 0) return msg('请至少选择一种验收凭证')
+    if (
+      workflowConfig.plannedMinutes !== null &&
+      String(workflowConfig.plannedMinutes) !== '' &&
+      (!Number.isInteger(Number(workflowConfig.plannedMinutes)) || Number(workflowConfig.plannedMinutes) < 0)
+    )
+      return msg('分钟数必须为非负整数')
   }
   return ''
 }
 
 function next() {
+  if (step.value === 3 && newContactValue.value && !addContactItem()) return
   const err = validateStep()
   validationError.value = err
   if (err) {
@@ -268,38 +295,6 @@ async function publish() {
 
     <!-- 步骤 1：基本内容 -->
     <section v-if="step === 1" class="surface-card" style="overflow: hidden; margin-bottom: 16px">
-      <div class="workflow-section">
-        <label class="workflow-field"
-          ><span>{{ msg('模板与要求') }}</span
-          ><select v-model="workflowConfig.templateId">
-            <option v-for="item in evidenceTemplates" :key="item.id" :value="item.id">{{ item.name[locale] }}</option>
-          </select></label
-        >
-        <ul>
-          <li v-for="item in selectedTemplate?.items" :key="item.id">
-            {{ item.label[locale] }} · {{ msg(item.required ? '必填' : '选填') }}
-          </li>
-        </ul>
-        <label class="workflow-field"
-          ><span>{{ msg('任务模式') }}</span
-          ><select v-model="workflowConfig.mode">
-            <option value="individual">{{ msg('个人任务') }}</option>
-            <option value="group">{{ msg('集体活动') }}</option>
-          </select></label
-        >
-        <label class="workflow-field"
-          ><span>{{ msg('计划时长（分钟）') }}</span
-          ><input v-model.number="workflowConfig.plannedMinutes" type="number" min="0" step="1"
-        /></label>
-        <label class="workflow-field"
-          ><span>{{ msg('材料截止时间') }} ({{ auth.timezone }})</span
-          ><input v-model="submissionDeadlineLocal" type="datetime-local"
-        /></label>
-        <label v-if="workflowConfig.mode === 'group'"
-          ><input v-model="workflowConfig.personalSubmissionRequired" type="checkbox" />
-          {{ msg('要求个人补充') }}</label
-        >
-      </div>
       <van-field
         v-model="form.title"
         :label="msg('任务名称')"
@@ -457,8 +452,6 @@ async function publish() {
         />
       </div>
 
-      <van-field v-model="form.duration" :label="msg('预计耗时')" :placeholder="msg('例如：约 2 小时')" />
-
       <div
         style="
           padding: 12px 16px;
@@ -519,6 +512,47 @@ async function publish() {
           <van-radio name="direct" style="margin-right: 16px">{{ msg('直接接取（先到先得）') }}</van-radio>
           <van-radio name="application">{{ msg('审核申请') }}</van-radio>
         </van-radio-group>
+      </div>
+      <div class="workflow-section">
+        <h3 style="margin: 0 0 12px; font-size: 14px">{{ msg('验收规则') }}</h3>
+        <label class="workflow-field"
+          ><span>{{ msg('模板与要求') }}</span
+          ><select v-model="workflowConfig.templateId">
+            <option v-for="item in evidenceTemplates" :key="item.id" :value="item.id">{{ item.name[locale] }}</option>
+          </select></label
+        >
+        <ul>
+          <li v-for="item in selectedTemplate?.items" :key="item.id">
+            <template v-if="item.kind === 'image' && form.proofTypes.includes('image')">
+              {{ msg('现场图片') }} · {{ msg('必填') }}
+            </template>
+            <template v-else>{{ item.label[locale] }} · {{ msg(item.required ? '必填' : '选填') }}</template>
+          </li>
+        </ul>
+        <label class="workflow-field"
+          ><span>{{ msg('任务模式') }}</span
+          ><select v-model="workflowConfig.mode">
+            <option value="individual">{{ msg('个人任务') }}</option>
+            <option value="group">{{ msg('集体活动') }}</option>
+          </select></label
+        >
+        <label class="workflow-field"
+          ><span>{{ msg('计划时长（分钟）') }}</span
+          ><input
+            v-model.number="workflowConfig.plannedMinutes"
+            type="number"
+            min="0"
+            step="1"
+            @input="plannedMinutesEdited = true"
+        /></label>
+        <label class="workflow-field"
+          ><span>{{ msg('材料截止时间') }} ({{ auth.timezone }})</span
+          ><input v-model="submissionDeadlineLocal" type="datetime-local"
+        /></label>
+        <label v-if="workflowConfig.mode === 'group'"
+          ><input v-model="workflowConfig.personalSubmissionRequired" type="checkbox" />
+          {{ msg('要求个人补充') }}</label
+        >
       </div>
     </section>
 

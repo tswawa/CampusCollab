@@ -4,7 +4,7 @@ import { afterEach, test } from 'node:test'
 import { computed } from 'vue'
 import { applyDefaultLocale, english, locale, msg, resourceKeys, setLocale } from './index'
 import { instantToLocalInput, setSchoolTimezone, zonedLocalToInstant, formatTimestamp } from '../utils/date'
-import { memberStatusMeta, proofTypeLabels } from '../utils/task'
+import { formatTaskDuration, memberStatusMeta, proofTypeLabels } from '../utils/task'
 afterEach(() => {
   setLocale('zh-CN', false)
   setSchoolTimezone('Asia/Shanghai')
@@ -12,10 +12,29 @@ afterEach(() => {
 
 test('all bilingual resources preserve interpolation parameters and have English copy', () => {
   assert.ok(resourceKeys.length > 500)
-  const parameters = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map(match => match[1]).sort()
+  const parameters = (text: string) => [...text.matchAll(/\{(\w+)(?:\}|,\s*plural,)/g)].map(match => match[1]).sort()
   for (const key of resourceKeys) {
     assert.deepEqual(parameters(english[key]), parameters(key), key)
     assert.equal(/[\u3400-\u9fff]/.test(english[key]), false, key)
+  }
+})
+test('English item counts use singular and plural forms', () => {
+  setLocale('en', false)
+  assert.equal(msg('共 {p0} 项', { p0: 1 }), '1 item')
+  assert.equal(msg('共 {p0} 项', { p0: 2 }), '2 items')
+})
+test('task durations format whole hours, fractional hours and minutes in both languages', () => {
+  const durations = [
+    { minutes: 120, zh: '约 2 小时', en: 'About 2 hours' },
+    { minutes: 90, zh: '约 1.5 小时', en: 'About 1.5 hours' },
+    { minutes: 60, zh: '约 1 小时', en: 'About 1 hour' },
+    { minutes: 45, zh: '约 45 分钟', en: 'About 45 minutes' }
+  ]
+  for (const language of ['zh-CN', 'en'] as const) {
+    setLocale(language, false)
+    for (const duration of durations) {
+      assert.equal(formatTaskDuration(duration.minutes), language === 'en' ? duration.en : duration.zh)
+    }
   }
 })
 test('institution edition changes are reactive without changing role or status identifiers', () => {

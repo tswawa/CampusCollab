@@ -30,7 +30,6 @@ const form = reactive({
   className: '',
   grade: '',
   email: '',
-  externalId: '',
   isExternal: false,
   password: '',
   confirmPassword: ''
@@ -99,7 +98,6 @@ async function submit() {
       ...payload,
       locale: locale.value,
       email: form.email.trim() || undefined,
-      externalId: form.externalId.trim() || undefined,
       isExternal: form.isExternal
     })
     if (!pending) {
@@ -243,12 +241,20 @@ async function submit() {
       </van-form>
 
       <!-- 密码设置 -->
-      <section class="surface-card" style="padding: 16px; margin-bottom: 16px">
-        <van-checkbox v-if="system.school.allowExternalParticipants && isStudent" v-model="form.isExternal">{{
-          msg('校外参与者')
-        }}</van-checkbox>
-        <van-field v-model="form.email" :label="msg('电子邮箱（选填）')" type="email" autocomplete="email" />
-        <van-field v-model="form.externalId" :label="msg('外部编号（选填）')" maxlength="100" />
+      <section class="surface-card" style="overflow: hidden; margin-bottom: 16px">
+        <van-checkbox
+          v-if="system.school.allowExternalParticipants && isStudent"
+          v-model="form.isExternal"
+          style="margin: 16px"
+          >{{ msg('校外参与者') }}</van-checkbox
+        >
+        <van-field
+          v-model="form.email"
+          :label="msg('邮箱')"
+          :placeholder="msg('选填，用于接收通知')"
+          type="email"
+          autocomplete="email"
+        />
       </section>
       <div style="font-size: 14px; font-weight: 700; color: #475569; margin: 0 2px 6px">{{ msg('登录密码') }}</div>
       <van-form class="surface-card" style="overflow: hidden; margin-bottom: 12px">
