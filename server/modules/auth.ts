@@ -1,12 +1,18 @@
 import { Type } from '@sinclair/typebox'
 import type { FastifyInstance } from 'fastify'
 import type { AppDatabase } from '../db/database.js'
-import { getSchool, getUserByAccount } from '../db/models.js'
+import { getSchool, getUserByAccount, normalizeAccount } from '../db/models.js'
 import { AppError } from '../errors.js'
 import { DefaultResponseSchema, success } from '../http.js'
 import type { SessionService } from '../security/session.js'
 import { verifyPassword } from '../security/password.js'
-import { createRegisteredUser } from './accounts.service.js'
+import {
+  assertLoginUnlocked,
+  changeOwnPassword,
+  clearLoginFailures,
+  createRegisteredUser,
+  recordLoginFailure
+} from './accounts.service.js'
 
 const AccountSchema = Type.String({ minLength: 4, maxLength: 254 })
 const PasswordSchema = Type.String({ minLength: 8, maxLength: 128 })
@@ -47,9 +53,15 @@ export function registerAuthRoutes(app: FastifyInstance, db: AppDatabase, sessio
     },
     async (request, reply) => {
       const body = request.body as { account: string; password: string }
+      const accountNormalized = normalizeAccount(body.account)
+      assertLoginUnlocked(db, accountNormalized)
       const account = getUserByAccount(db, body.account)
       const verified = await verifyPassword(body.password, account?.passwordHash)
-      if (!verified || !account) throw new AppError(401, 'LOGIN_FAILED', '账号或密码不正确')
+      if (!verified || !account) {
+        recordLoginFailure(db, accountNormalized)
+        throw new AppError(401, 'LOGIN_FAILED', '账号或密码不正确')
+      }
+      clearLoginFailures(db, accountNormalized)
       const fresh = getUserByAccount(db, body.account)
       if (!fresh || fresh.version !== account.version || fresh.passwordHash !== account.passwordHash) {
         throw new AppError(401, 'LOGIN_FAILED', '账号信息已变化，请重新登录')
@@ -65,6 +77,36 @@ export function registerAuthRoutes(app: FastifyInstance, db: AppDatabase, sessio
           locale: getSchool(db).defaultLocale
         },
         '登录成功'
+      )
+    }
+  )
+
+  app.post(
+    '/api/auth/password',
+    {
+      config: { rateLimit: { max: 10, timeWindow: '10 minutes' } },
+      schema: {
+        body: Type.Object(
+          { currentPassword: Type.String({ minLength: 1, maxLength: 128 }), newPassword: PasswordSchema },
+          { additionalProperties: false }
+        ),
+        response: DefaultResponseSchema
+      }
+    },
+    async request => {
+      const user = sessions.requireUser(request, undefined, { allowPasswordChange: true })
+      const session = sessions.resolve(request)!
+      const body = request.body as { currentPassword: string; newPassword: string }
+      const updated = await changeOwnPassword(db, user.id, body.currentPassword, body.newPassword)
+      sessions.invalidateUserExcept(user.id, session.tokenHash)
+      return success(
+        {
+          user: updated,
+          csrfToken: session.csrfToken,
+          timezone: getSchool(db).timezone,
+          locale: getSchool(db).defaultLocale
+        },
+        '密码已更新'
       )
     }
   )

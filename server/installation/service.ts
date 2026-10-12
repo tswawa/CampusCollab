@@ -6,7 +6,7 @@ import type { AppDatabase } from '../db/database.js'
 import { nowIso } from '../db/database.js'
 import { getSchool, getUserById, normalizeAccount } from '../db/models.js'
 import { assertCondition } from '../errors.js'
-import { hashPassword, validatePassword } from '../security/password.js'
+import { hashPassword, isCommonPassword, validatePassword } from '../security/password.js'
 import { hasInstallationBusinessData, isInstallationConfigured } from './state.js'
 
 export const setupTokenPath = (db: AppDatabase) => `${db.config.databasePath}.setup-token`
@@ -81,6 +81,12 @@ function validateInput(input: Omit<InstallationInput, 'setupToken'>) {
     400,
     'PASSWORD_INVALID',
     '密码须为 8—128 位，包含字母、数字或符号中的至少两类'
+  )
+  assertCondition(
+    !isCommonPassword(input.admin.password, input.admin.account),
+    400,
+    'PASSWORD_TOO_COMMON',
+    '密码过于常见或包含账号，请换一个更难猜的密码'
   )
   let validTimezone = false
   try {

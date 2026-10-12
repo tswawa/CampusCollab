@@ -18,7 +18,7 @@ test('并发注册同一账号仅写入一次，哈希期间撤销管理员身�
       account: 'RACETEACHER',
       name: '并发教师',
       departmentId: 'dept-cs',
-      password: 'Teacher@123'
+      password: 'Birch!River42'
     }
     const results = await Promise.allSettled([
       createRegisteredUser(context.db, registration),

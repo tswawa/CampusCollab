@@ -93,10 +93,13 @@ export class SessionService {
     reply.clearCookie(cookieName, { path: '/', sameSite: 'lax', secure: this.config.secureCookie })
   }
 
-  requireUser(request: FastifyRequest, roles?: UserRole[]): CampusUser {
+  requireUser(request: FastifyRequest, roles?: UserRole[], options?: { allowPasswordChange?: boolean }): CampusUser {
     const session = this.resolve(request)
     if (!session?.user) throw new AppError(401, 'AUTH_REQUIRED', '请先登录')
     if (roles && !roles.includes(session.user.role)) throw new AppError(403, 'FORBIDDEN', '没有操作权限')
+    if (session.user.mustChangePassword && options?.allowPasswordChange !== true) {
+      throw new AppError(403, 'PASSWORD_CHANGE_REQUIRED', '请先修改初始密码')
+    }
     return session.user
   }
 
@@ -118,6 +121,10 @@ export class SessionService {
 
   invalidateUser(userId: string) {
     this.db.run('DELETE FROM sessions WHERE user_id = ?', userId)
+  }
+
+  invalidateUserExcept(userId: string, keepTokenHash: string) {
+    this.db.run('DELETE FROM sessions WHERE user_id = ? AND token_hash <> ?', userId, keepTokenHash)
   }
 
   invalidateAll() {

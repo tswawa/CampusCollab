@@ -69,6 +69,7 @@ export interface CampusUser {
   email?: string
   externalId?: string
   isExternal?: boolean
+  mustChangePassword?: boolean
 }
 export interface AdminAccountPayload {
   role: UserRole

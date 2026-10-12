@@ -8,10 +8,10 @@ import type {
 } from '../../shared/contracts.js'
 import type { AppDatabase } from '../db/database.js'
 import { nowIso } from '../db/database.js'
-import { getSchool, getUserById, mapUser, normalizeAccount } from '../db/models.js'
-import { assertCondition } from '../errors.js'
+import { getSchool, getUserByAccount, getUserById, mapUser, normalizeAccount } from '../db/models.js'
+import { AppError, assertCondition } from '../errors.js'
 import { createEventNotice } from '../i18n/notices.js'
-import { hashPassword, validatePassword } from '../security/password.js'
+import { hashPassword, isCommonPassword, validatePassword, verifyPassword } from '../security/password.js'
 import { isInstallationConfigured } from '../installation/state.js'
 
 function validateIdentity(account: string, name: string) {
@@ -206,6 +206,13 @@ async function createUser(
   assertCondition(payload.password, 400, 'PASSWORD_REQUIRED', '请设置初始密码')
   const passwordError = validatePassword(payload.password)
   assertCondition(!passwordError, 400, 'PASSWORD_INVALID', passwordError)
+  if (selfRegistration)
+    assertCondition(
+      !isCommonPassword(payload.password, payload.account),
+      400,
+      'PASSWORD_TOO_COMMON',
+      '密码过于常见或包含账号，请换一个更难猜的密码'
+    )
   ensureAccountUnique(db, payload.account)
   validateProfile(db, payload)
   if (selfRegistration)
@@ -234,8 +241,8 @@ async function createUser(
     db.run(
       `INSERT INTO users
       (id, role, account, account_normalized, name, department_id, class_id, grade_id, password_hash,
-       approval, skills_json, version, created_at, updated_at, locale, email, external_id, is_external)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', 1, ?, ?, ?, ?, ?, ?)`,
+       approval, skills_json, version, created_at, updated_at, locale, email, external_id, is_external, must_change_password)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', 1, ?, ?, ?, ?, ?, ?, ?)`,
       id,
       payload.role,
       payload.account.trim(),
@@ -251,7 +258,8 @@ async function createUser(
       null,
       profile.email,
       profile.externalId,
-      payload.isExternal ? 1 : 0
+      payload.isExternal ? 1 : 0,
+      actor ? 1 : 0
     )
     if (payload.approval === 'pending') {
       db.all("SELECT id FROM users WHERE role = 'admin' AND approval = 'approved'").forEach(admin =>
@@ -311,7 +319,8 @@ export async function updateAdminManagedUser(
     const result = db.run(
       `UPDATE users SET role = ?, account = ?, account_normalized = ?, name = ?, department_id = ?,
       class_id = ?, grade_id = ?, approval = ?, password_hash = COALESCE(?, password_hash), version = version + 1,
-      updated_at = ?, locale = ?, email = ?, external_id = ?, is_external = ? WHERE id = ? AND version = ?`,
+      updated_at = ?, locale = ?, email = ?, external_id = ?, is_external = ?, must_change_password = ?
+      WHERE id = ? AND version = ?`,
       payload.role,
       payload.account.trim(),
       normalizeAccount(payload.account),
@@ -326,6 +335,7 @@ export async function updateAdminManagedUser(
       payload.email === undefined ? (current.email ?? null) : profile.email,
       payload.externalId === undefined ? (current.externalId ?? null) : profile.externalId,
       (payload.isExternal ?? current.isExternal) ? 1 : 0,
+      passwordHash || current.mustChangePassword ? 1 : 0,
       userId,
       current.version
     )
@@ -373,18 +383,100 @@ export async function resetUserPassword(
   const hash = await hashPassword(password)
   return db.transaction(() => {
     if (actor) assertCurrentAdmin(db, actor)
-    assertCondition(getUserById(db, userId), 404, 'USER_NOT_FOUND', '账号不存在')
+    const current = getUserById(db, userId)
+    assertCondition(current, 404, 'USER_NOT_FOUND', '账号不存在')
     const result = db.run(
-      'UPDATE users SET password_hash = ?, version = version + 1, updated_at = ? WHERE id = ? AND version = ?',
+      `UPDATE users SET password_hash = ?, must_change_password = ?, version = version + 1, updated_at = ?
+      WHERE id = ? AND version = ?`,
       hash,
+      actor || current.mustChangePassword ? 1 : 0,
       nowIso(),
       userId,
       version
     )
     assertCondition(Number(result.changes) === 1, 409, 'STALE_VERSION', '账号已变化，请刷新后重试')
     db.run('DELETE FROM sessions WHERE user_id = ?', userId)
+    clearLoginFailures(db, normalizeAccount(current.account))
     return getUserById(db, userId)!
   })
+}
+
+export async function changeOwnPassword(
+  db: AppDatabase,
+  userId: string,
+  currentPassword: string,
+  newPassword: string
+): Promise<CampusUser> {
+  const user = getUserById(db, userId)
+  assertCondition(user, 404, 'USER_NOT_FOUND', '账号不存在')
+  const account = getUserByAccount(db, user.account)!
+  assertCondition(
+    await verifyPassword(currentPassword, account.passwordHash),
+    400,
+    'CURRENT_PASSWORD_INVALID',
+    '当前密码不正确'
+  )
+  const error = validatePassword(newPassword)
+  assertCondition(!error, 400, 'PASSWORD_INVALID', error)
+  assertCondition(
+    !isCommonPassword(newPassword, account.account),
+    400,
+    'PASSWORD_TOO_COMMON',
+    '密码过于常见或包含账号，请换一个更难猜的密码'
+  )
+  assertCondition(newPassword !== currentPassword, 400, 'PASSWORD_UNCHANGED', '新密码不能与当前密码相同')
+  const hash = await hashPassword(newPassword)
+  return db.transaction(() => {
+    const current = getUserById(db, userId)
+    assertCondition(current?.version === account.version, 409, 'STALE_VERSION', '账号已变化，请刷新后重试')
+    const result = db.run(
+      `UPDATE users SET password_hash = ?, must_change_password = 0, version = version + 1, updated_at = ?
+      WHERE id = ? AND version = ?`,
+      hash,
+      nowIso(),
+      userId,
+      account.version
+    )
+    assertCondition(Number(result.changes) === 1, 409, 'STALE_VERSION', '账号已变化，请刷新后重试')
+    audit(db, userId, 'account.password_changed', 'account', userId)
+    return getUserById(db, userId)!
+  })
+}
+
+export function assertLoginUnlocked(db: AppDatabase, accountNormalized: string) {
+  const now = Date.now()
+  const lockedUntil = Number(
+    db.get('SELECT locked_until FROM login_throttle WHERE account_normalized = ?', accountNormalized)?.locked_until ?? 0
+  )
+  if (lockedUntil > now) {
+    const minutes = Math.max(1, Math.ceil((lockedUntil - now) / 60_000))
+    throw new AppError(429, 'LOGIN_LOCKED', '登录失败次数过多，请 {minutes} 分钟后再试', { minutes })
+  }
+}
+
+export function recordLoginFailure(db: AppDatabase, accountNormalized: string) {
+  const now = Date.now()
+  db.transaction(() => {
+    db.run('DELETE FROM login_throttle WHERE updated_at < ?', now - 24 * 60 * 60_000)
+    const failures =
+      Number(
+        db.get('SELECT failures FROM login_throttle WHERE account_normalized = ?', accountNormalized)?.failures ?? 0
+      ) + 1
+    const lockedUntil = failures >= 5 ? now + Math.min(2 ** (failures - 5), 15) * 60_000 : 0
+    db.run(
+      `INSERT INTO login_throttle(account_normalized, failures, locked_until, updated_at) VALUES (?, ?, ?, ?)
+      ON CONFLICT(account_normalized) DO UPDATE SET failures = excluded.failures,
+      locked_until = excluded.locked_until, updated_at = excluded.updated_at`,
+      accountNormalized,
+      failures,
+      lockedUntil,
+      now
+    )
+  })
+}
+
+export function clearLoginFailures(db: AppDatabase, accountNormalized: string) {
+  db.run('DELETE FROM login_throttle WHERE account_normalized = ?', accountNormalized)
 }
 
 export function deleteUser(db: AppDatabase, actor: CampusUser, userId: string, version: number) {

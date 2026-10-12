@@ -72,7 +72,8 @@ export function mapUser(row: SqlRow, institutionLocale: SchoolProfile['defaultLo
     locale: institutionLocale,
     email: row.email ? text(row.email) : undefined,
     externalId: row.external_id ? text(row.external_id) : undefined,
-    isExternal: bool(row.is_external)
+    isExternal: bool(row.is_external),
+    mustChangePassword: bool(row.must_change_password)
   }
 }
 
