@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import path from 'node:path'
 import { test } from 'node:test'
 import sharp from 'sharp'
 import type { CampusTask, SchoolProfile, UploadData } from '../../shared/contracts.js'
 import { createAdminManagedUser } from '../modules/accounts.service.js'
 import { nowIso } from '../db/database.js'
+import { cleanupExpiredTemporaryFiles } from '../modules/file-cleanup.js'
 import { anonymousSession, closeTestApp, createAdmin, createTestApp, dataOf, login, testOrigin } from './helpers.js'
 
 async function multipart(file: Buffer, type: string, name: string) {
@@ -263,6 +266,43 @@ test('Logo 与凭证图片采用隔离文件存储和访问控制', async () => 
     assert.equal(serialized.includes('password_hash'), false)
     assert.equal(serialized.includes('csrf'), false)
     assert.equal(serialized.includes('token_hash'), false)
+  } finally {
+    await closeTestApp(context)
+  }
+})
+
+test('清理过期且未引用的临时文件并保留未过期文件', async () => {
+  const context = await createTestApp()
+  try {
+    const owner = await createAdmin(context)
+    const png = await sharp({ create: { width: 1, height: 1, channels: 3, background: '#246A49' } })
+      .png()
+      .toBuffer()
+    fs.mkdirSync(path.join(context.config.uploadDir, 'logo'), { recursive: true })
+    const files = [
+      { id: 'file-expired', storedName: 'logo/expired.png', expiresAt: Date.now() - 60_000 },
+      { id: 'file-unexpired', storedName: 'logo/unexpired.png', expiresAt: Date.now() + 3_600_000 }
+    ]
+    for (const file of files) {
+      fs.writeFileSync(path.join(context.config.uploadDir, file.storedName), png)
+      context.db.run(
+        `INSERT INTO files(id, owner_user_id, purpose, stored_name, original_name, mime_type,
+        size_bytes, width, height, status, expires_at, created_at)
+        VALUES (?, ?, 'logo', ?, ?, 'image/png', ?, 1, 1, 'temporary', ?, ?)`,
+        file.id,
+        owner.id,
+        file.storedName,
+        path.basename(file.storedName),
+        png.length,
+        file.expiresAt,
+        nowIso()
+      )
+    }
+    assert.deepEqual(cleanupExpiredTemporaryFiles(context.db), { deleted: 1, failed: 0 })
+    assert.equal(context.db.get('SELECT id FROM files WHERE id = ?', 'file-expired'), undefined)
+    assert.equal(fs.existsSync(path.join(context.config.uploadDir, 'logo/expired.png')), false)
+    assert.ok(context.db.get('SELECT id FROM files WHERE id = ?', 'file-unexpired'))
+    assert.equal(fs.existsSync(path.join(context.config.uploadDir, 'logo/unexpired.png')), true)
   } finally {
     await closeTestApp(context)
   }

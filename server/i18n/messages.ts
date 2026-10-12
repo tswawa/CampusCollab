@@ -46,6 +46,7 @@ export const englishErrors: Record<string, string> = {
   ORIGIN_REJECTED: 'The request origin is not allowed.',
   CSRF_SESSION_REQUIRED: 'Your session has expired. Refresh the page.',
   CSRF_INVALID: 'The security check failed. Refresh the page.',
+  URL_ENCODING_INVALID: 'The request URL is invalid.',
   VALIDATION_ERROR: 'The request contains invalid or missing fields.',
   PAYLOAD_TOO_LARGE: 'The upload exceeds the size limit.',
   RATE_LIMITED: 'Too many requests. Try again later.',

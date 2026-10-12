@@ -31,7 +31,7 @@ export function parseAcceptLanguage(value: string | undefined): Locale | undefin
 }
 
 export function resolveRequestLocale(request: FastifyRequest, db: AppDatabase, _sessions: SessionService): Locale {
-  if (request.url.split('?')[0] === '/api/installation' && !isInstallationConfigured(db)) {
+  if (request.routeOptions.url === '/api/installation' && !isInstallationConfigured(db)) {
     return parseAcceptLanguage(request.headers['accept-language']) ?? getSchool(db).defaultLocale
   }
   return getSchool(db).defaultLocale

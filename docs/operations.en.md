@@ -12,7 +12,7 @@ Install Node.js 24.13.1 or a newer 24.x release, dependencies and build as descr
 
 The minimum version fixes Windows `rmSync` handling of non-ASCII paths; see the [official release record](https://nodejs.org/en/blog/release/v24.13.1). Application and maintenance entry points reject unsupported runtimes before opening the database. Upgrade the runtime instead of relaxing this check.
 
-1. After building, set `NODE_ENV=production`, the actual HTTPS `APP_ORIGIN` and institutional `SCHOOL_TIMEZONE` in `.env`. Enable `TRUST_PROXY` only behind a controlled reverse proxy.
+1. After building, set `NODE_ENV=production`, the actual HTTPS `APP_ORIGIN` and institutional `SCHOOL_TIMEZONE` in `.env`. Enable `TRUST_PROXY` only behind a controlled reverse proxy: set it to that proxy's address (for example `127.0.0.1`, a CIDR range, or `loopback`); `true` means a proxy on the same host. Hop counts are not accepted.
 2. Set independent persistent `DATABASE_PATH`, `UPLOAD_DIR` and `BACKUP_DIR`, keeping `API_HOST=127.0.0.1`. Do not store data under the build output directory `dist`.
 3. Configure a deployment-owner `SETUP_TOKEN`. If omitted, the application creates `<database path>.setup-token` beside an empty database. Obtain it on the host and keep it private; the status endpoint, public pages and logs never expose it.
 4. Run `npm start`. It loads `.env`, migrates the database and serves the compiled frontend. The default listener is `127.0.0.1:3000`; terminate HTTPS at the reverse proxy.

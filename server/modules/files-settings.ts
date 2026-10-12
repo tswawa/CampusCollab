@@ -16,6 +16,7 @@ import { audit } from './accounts.service.js'
 import { assertWorkflowUploadAllowed, canReadWorkflowFile, fileIsReferenced } from './workflow.service.js'
 
 const allowedMime = new Set(['image/jpeg', 'image/png', 'image/webp'])
+type ImageMetadata = Awaited<ReturnType<ReturnType<typeof sharp>['metadata']>>
 const outputForFormat = (format?: string) =>
   format === 'jpeg'
     ? { extension: 'jpg', mime: 'image/jpeg' }
@@ -24,6 +25,22 @@ const outputForFormat = (format?: string) =>
       : format === 'webp'
         ? { extension: 'webp', mime: 'image/webp' }
         : undefined
+
+let activeImageNormalizations = 0
+const imageNormalizationWaiters: Array<() => void> = []
+
+async function acquireImageNormalizationSlot() {
+  if (activeImageNormalizations >= 2) {
+    await new Promise<void>(resolve => imageNormalizationWaiters.push(resolve))
+  } else {
+    activeImageNormalizations += 1
+  }
+  return () => {
+    const next = imageNormalizationWaiters.shift()
+    if (next) next()
+    else activeImageNormalizations -= 1
+  }
+}
 
 async function persistImage(
   request: FastifyRequest,
@@ -53,30 +70,36 @@ async function persistImage(
     'FILE_TOO_LARGE',
     purpose === 'logo' ? 'Logo 不能超过 2MB' : '单张凭证图片不能超过 10MB'
   )
-  const image = sharp(source, { failOn: 'error', limitInputPixels: 40_000_000 }).rotate()
-  let metadata
-  try {
-    metadata = await image.metadata()
-  } catch {
-    throw new AppError(415, 'FILE_DECODE_INVALID', '图片内容无效或已损坏')
-  }
-  const output = outputForFormat(metadata.format)
-  assertCondition(
-    output && metadata.width && metadata.height,
-    415,
-    'FILE_TYPE_INVALID',
-    '仅支持 JPEG、PNG 或 WebP 图片'
-  )
-  assertCondition(
-    metadata.width <= 12_000 && metadata.height <= 12_000 && metadata.width * metadata.height <= 40_000_000,
-    413,
-    'IMAGE_DIMENSIONS_TOO_LARGE',
-    '图片像素尺寸过大'
-  )
+  const releaseNormalization = await acquireImageNormalizationSlot()
+  let metadata: ImageMetadata
+  let output: ReturnType<typeof outputForFormat>
   let normalized: Buffer
-  if (metadata.format === 'jpeg') normalized = await image.jpeg({ quality: 88, mozjpeg: true }).toBuffer()
-  else if (metadata.format === 'png') normalized = await image.png({ compressionLevel: 9 }).toBuffer()
-  else normalized = await image.webp({ quality: 88 }).toBuffer()
+  try {
+    const image = sharp(source, { failOn: 'error', limitInputPixels: 40_000_000 }).rotate()
+    try {
+      metadata = await image.metadata()
+    } catch {
+      throw new AppError(415, 'FILE_DECODE_INVALID', '图片内容无效或已损坏')
+    }
+    output = outputForFormat(metadata.format)
+    assertCondition(
+      output && metadata.width && metadata.height,
+      415,
+      'FILE_TYPE_INVALID',
+      '仅支持 JPEG、PNG 或 WebP 图片'
+    )
+    assertCondition(
+      metadata.width <= 12_000 && metadata.height <= 12_000 && metadata.width * metadata.height <= 40_000_000,
+      413,
+      'IMAGE_DIMENSIONS_TOO_LARGE',
+      '图片像素尺寸过大'
+    )
+    if (metadata.format === 'jpeg') normalized = await image.jpeg({ quality: 88, mozjpeg: true }).toBuffer()
+    else if (metadata.format === 'png') normalized = await image.png({ compressionLevel: 9 }).toBuffer()
+    else normalized = await image.webp({ quality: 88 }).toBuffer()
+  } finally {
+    releaseNormalization()
+  }
   assertCondition(
     normalized.length <= maxBytes,
     413,

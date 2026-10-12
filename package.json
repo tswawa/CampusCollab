@@ -10,7 +10,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -k -n API,WEB -c yellow,cyan \"npm:dev:server\" \"npm:dev:client\"",
-    "dev:client": "vite --host 0.0.0.0 --port 5173",
+    "dev:client": "vite --port 5173",
     "dev:server": "node --env-file-if-exists=.env --import tsx --watch server/index.ts",
     "build": "npm run type-check && vite build && tsc -p tsconfig.server.json && node scripts/package-source.mjs",
     "build:client": "vue-tsc --noEmit -p tsconfig.app.json && vite build",

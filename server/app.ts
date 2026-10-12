@@ -13,6 +13,7 @@ import { AppError } from './errors.js'
 import { registerAdminAccountRoutes } from './modules/admin-accounts.js'
 import { registerAdminCatalogRoutes } from './modules/admin-catalog.js'
 import { registerAuthRoutes } from './modules/auth.js'
+import { cleanupExpiredTemporaryFiles } from './modules/file-cleanup.js'
 import { registerFileAndSettingRoutes } from './modules/files-settings.js'
 import { registerPublicRoutes } from './modules/public.js'
 import { registerNoticeDashboardRoutes } from './modules/notices-dashboard.js'
@@ -79,6 +80,15 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<BuiltApp>
     bodyLimit: 12 * 1024 * 1024
   })
 
+  app.addHook('onRequest', async (request, reply) => {
+    for (const match of request.url.split('?')[0].matchAll(/%([0-9a-f]{2})/gi)) {
+      const character = String.fromCharCode(Number.parseInt(match[1], 16))
+      if (/[A-Za-z0-9._~-]/.test(character)) {
+        return reply.code(400).send({ ok: false, message: '请求地址格式不正确', code: 'URL_ENCODING_INVALID' })
+      }
+    }
+  })
+
   await app.register(cookie)
   await app.register(helmet, {
     contentSecurityPolicy: config.serveClient
@@ -101,7 +111,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<BuiltApp>
   await app.register(rateLimit, {
     global: false,
     hook: 'preHandler',
-    keyGenerator: request => `${request.ip}:${request.url.split('?')[0]}`
+    keyGenerator: request => `${request.ip}:${request.routeOptions.url ?? request.url.split('?')[0]}`
   })
   await app.register(multipart, {
     limits: { files: 1, fields: 4, fileSize: 10 * 1024 * 1024, parts: 5 }
@@ -128,18 +138,18 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<BuiltApp>
   })
 
   app.addHook('preValidation', async request => {
-    if (request.url.startsWith('/api/') && mutationMethods.has(request.method)) {
+    if (request.routeOptions.url?.startsWith('/api/') && mutationMethods.has(request.method)) {
       sessions.verifyMutation(request)
-      if (request.url.split('?')[0] !== '/api/installation' && !isInstallationConfigured(db)) {
+      if (request.routeOptions.url !== '/api/installation' && !isInstallationConfigured(db)) {
         throw new AppError(409, 'INSTALLATION_REQUIRED', '请先由部署管理员完成机构初始化')
       }
     }
   })
   app.addHook('onSend', async (request, reply, payload) => {
-    if (request.url.startsWith('/api/') && !reply.hasHeader('cache-control'))
-      reply.header('Cache-Control', 'private, no-store')
+    const isApiRoute = (request.routeOptions.url ?? request.url.split('?')[0]).startsWith('/api/')
+    if (isApiRoute && !reply.hasHeader('cache-control')) reply.header('Cache-Control', 'private, no-store')
     if (
-      request.url.startsWith('/api/') &&
+      isApiRoute &&
       String(reply.getHeader('content-type')).includes('application/json') &&
       typeof payload === 'string'
     ) {
@@ -185,7 +195,28 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<BuiltApp>
   })
 
   const stopMail = startMailDispatcher(db)
+  let cleanupTimeout: ReturnType<typeof setTimeout> | undefined
+  let cleanupInterval: ReturnType<typeof setInterval> | undefined
+  if (config.nodeEnv !== 'test') {
+    const cleanup = () => {
+      try {
+        cleanupExpiredTemporaryFiles(db)
+      } catch (error) {
+        app.log.error({ err: error }, 'temporary file cleanup failed')
+      }
+    }
+    app.addHook('onReady', async () => {
+      cleanupTimeout = setTimeout(() => {
+        cleanup()
+        cleanupInterval = setInterval(cleanup, 60 * 60 * 1000)
+        cleanupInterval.unref()
+      }, 60 * 1000)
+      cleanupTimeout.unref()
+    })
+  }
   app.addHook('onClose', async () => {
+    if (cleanupTimeout) clearTimeout(cleanupTimeout)
+    if (cleanupInterval) clearInterval(cleanupInterval)
     await stopMail()
     db.close()
   })

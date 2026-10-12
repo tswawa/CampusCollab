@@ -1,5 +1,5 @@
 import { Type } from '@sinclair/typebox'
-import type { FastifyInstance } from 'fastify'
+import type { FastifyInstance, FastifyRequest } from 'fastify'
 import type {
   ConfigureWorkflowInput,
   ReviewRevisionInput,
@@ -68,8 +68,7 @@ const reviewFields = {
 
 export function registerWorkflowRoutes(app: FastifyInstance, db: AppDatabase, sessions: SessionService) {
   // Reject numeric identity input before AJV can coerce it and lose leading-zero provenance.
-  app.addHook('preValidation', async request => {
-    if (!/\/workflow\/import(?:\/preview)?(?:\?|$)/.test(request.url)) return
+  const validateRosterImport = async (request: FastifyRequest) => {
     const input = request.body as Partial<RosterImportInput> | undefined
     if (Array.isArray(input?.rows))
       assertCondition(
@@ -78,7 +77,7 @@ export function registerWorkflowRoutes(app: FastifyInstance, db: AppDatabase, se
         'VALIDATION_ERROR',
         '外部编号必须使用文本，不能传入数字'
       )
-  })
+  }
   app.get('/api/workflow/templates', { schema: { response: DefaultResponseSchema } }, async request => {
     sessions.requireUser(request)
     return success(evidenceTemplates)
@@ -162,7 +161,10 @@ export function registerWorkflowRoutes(app: FastifyInstance, db: AppDatabase, se
   )
   app.post(
     '/api/tasks/:id/workflow/import/preview',
-    { schema: { params: IdParamsSchema, body: ObjectSchema(importFields), response: DefaultResponseSchema } },
+    {
+      preValidation: validateRosterImport,
+      schema: { params: IdParamsSchema, body: ObjectSchema(importFields), response: DefaultResponseSchema }
+    },
     async request =>
       success(
         previewRosterImport(
@@ -176,6 +178,7 @@ export function registerWorkflowRoutes(app: FastifyInstance, db: AppDatabase, se
   app.post(
     '/api/tasks/:id/workflow/import',
     {
+      preValidation: validateRosterImport,
       schema: {
         params: IdParamsSchema,
         body: ObjectSchema({

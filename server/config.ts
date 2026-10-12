@@ -11,6 +11,31 @@ function booleanValue(value: string | undefined, fallback = false): boolean {
   return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase())
 }
 
+// Fastify ignores numeric hop counts (it cannot verify the immediate peer), so trusted proxies must be named.
+// `true` keeps the documented default deployment working: a reverse proxy on the same host.
+const proxyKeywords = new Set(['loopback', 'linklocal', 'uniquelocal'])
+
+export function parseTrustProxy(value: string | undefined): boolean | string[] {
+  const normalized = value?.trim().toLowerCase() ?? ''
+  if (['', 'false', '0', 'no', 'off'].includes(normalized)) return false
+  if (['true', '1', 'yes', 'on'].includes(normalized)) return ['loopback']
+  const entries = normalized
+    .split(',')
+    .map(entry => entry.trim())
+    .filter(Boolean)
+  if (!entries.length || entries.some(entry => !proxyKeywords.has(entry) && !/^[0-9a-f.:/]+$/.test(entry))) {
+    throw new Error(
+      'TRUST_PROXY must be false, true (a proxy on this host), or comma-separated proxy addresses: IP addresses, CIDR ranges, loopback, linklocal or uniquelocal'
+    )
+  }
+  if (entries.some(entry => /^\d+$/.test(entry))) {
+    throw new Error(
+      'TRUST_PROXY does not accept hop counts; list the reverse proxy addresses instead, for example 127.0.0.1'
+    )
+  }
+  return entries
+}
+
 export interface AppConfig {
   nodeEnv: 'development' | 'test' | 'production'
   host: string
@@ -23,7 +48,7 @@ export interface AppConfig {
   preSessionTtlSeconds: number
   timezone: string
   secureCookie: boolean
-  trustProxy: boolean
+  trustProxy: boolean | string[]
   serveClient: boolean
   clientDist: string
   setupToken: string
@@ -76,7 +101,7 @@ export function loadConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     preSessionTtlSeconds: positiveInteger(process.env.PRESESSION_TTL_SECONDS, 60 * 30),
     timezone: process.env.SCHOOL_TIMEZONE || 'Asia/Shanghai',
     secureCookie: nodeEnv === 'production' && !allowInsecure,
-    trustProxy: booleanValue(process.env.TRUST_PROXY),
+    trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
     serveClient: nodeEnv === 'production' || booleanValue(process.env.SERVE_CLIENT),
     clientDist: path.resolve(projectRoot, process.env.CLIENT_DIST || 'dist'),
     setupToken: process.env.SETUP_TOKEN || '',

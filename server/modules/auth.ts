@@ -13,19 +13,28 @@ const PasswordSchema = Type.String({ minLength: 8, maxLength: 128 })
 const LocaleSchema = Type.Union([Type.Literal('zh-CN'), Type.Literal('en')])
 
 export function registerAuthRoutes(app: FastifyInstance, db: AppDatabase, sessions: SessionService) {
-  app.get('/api/auth/session', { schema: { response: DefaultResponseSchema } }, async (request, reply) => {
-    sessions.cleanupExpired()
-    const session = sessions.ensure(request, reply)
-    return success(
-      {
-        user: session.user,
-        csrfToken: session.csrfToken,
-        timezone: getSchool(db).timezone,
-        locale: getSchool(db).defaultLocale
+  app.get(
+    '/api/auth/session',
+    {
+      config: {
+        rateLimit: { max: 300, timeWindow: '1 minute', allowList: request => Boolean(sessions.resolve(request)) }
       },
-      '会话已恢复'
-    )
-  })
+      schema: { response: DefaultResponseSchema }
+    },
+    async (request, reply) => {
+      sessions.cleanupExpired()
+      const session = sessions.ensure(request, reply)
+      return success(
+        {
+          user: session.user,
+          csrfToken: session.csrfToken,
+          timezone: getSchool(db).timezone,
+          locale: getSchool(db).defaultLocale
+        },
+        '会话已恢复'
+      )
+    }
+  )
 
   app.post(
     '/api/auth/login',

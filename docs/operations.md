@@ -12,7 +12,7 @@
 
 最低版本修正了 Windows 非 ASCII 路径的 `rmSync` 问题，见 [Node 官方发布记录](https://nodejs.org/en/blog/release/v24.13.1)。应用和维护入口会在打开数据库前拒绝不支持的运行版本；不要用放宽版本检查来替代升级。
 
-1. 构建完成后，在 `.env` 中设置 `NODE_ENV=production`、真实 HTTPS `APP_ORIGIN` 和机构 `SCHOOL_TIMEZONE`。反向代理确实受控时才启用 `TRUST_PROXY`。
+1. 构建完成后，在 `.env` 中设置 `NODE_ENV=production`、真实 HTTPS `APP_ORIGIN` 和机构 `SCHOOL_TIMEZONE`。反向代理确实受控时才启用 `TRUST_PROXY`：设为该代理的地址（如 `127.0.0.1`、CIDR 网段或 `loopback`）；`true` 表示代理与应用在同一台主机。不接受跳数。
 2. 设置独立持久路径 `DATABASE_PATH`、`UPLOAD_DIR`、`BACKUP_DIR`，保留 `API_HOST=127.0.0.1`；这些路径不要指向会被下一次构建清空的 `dist`。
 3. 为新部署配置 `SETUP_TOKEN` 安装码；未配置时，应用仅在空库旁创建 `<数据库路径>.setup-token` 文件，部署负责人从主机取得并保密保存。安装码不会出现在状态接口、公开页面或日志中。
 4. 运行 `npm start`。应用读取 `.env`，迁移数据库并提供编译后的前端；默认监听 `127.0.0.1:3000`，由反向代理终止 HTTPS。
