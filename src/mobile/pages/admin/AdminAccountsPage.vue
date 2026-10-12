@@ -94,6 +94,7 @@ watch([() => form.departmentId, () => form.gradeId, () => form.role], () => {
   if (!classOptions.value.some(item => item.id === form.classId)) form.classId = ''
 })
 const filteredUsers = computed(() => auth.accounts.items)
+const pendingUsers = computed(() => filteredUsers.value.filter(user => user.approval === 'pending'))
 const roleLabel = (role: UserRole) => roleOptions.value.find(item => item.value === role)?.label ?? role
 const statusLabel = (status: ApprovalStatus) => statusOptions.value.find(item => item.value === status)?.label ?? status
 function openCreate() {
@@ -169,6 +170,28 @@ async function saveAccount() {
 function setStatus(user: CampusUser, approval: ApprovalStatus) {
   void run(() => auth.setAccountStatus(user.id, approval, user.version), undefined, msg('账号状态已更新'))
 }
+async function approvePage() {
+  if (busy.value || loading.value || !ready.value || statusFilter.value !== 'pending') return
+  const users = pendingUsers.value.slice()
+  if (!users.length) return
+  try {
+    await showConfirmDialog({
+      title: msg('通过本页全部待审核账号'),
+      message: msg('将通过本页 {p0} 个待审核账号。', { p0: users.length }),
+      confirmButtonText: msg('通过')
+    })
+  } catch {
+    return
+  }
+  const approved = await run(
+    async () => {
+      for (const user of users) await auth.setAccountStatus(user.id, 'approved', user.version)
+    },
+    undefined,
+    msg('已通过 {p0} 个账号', { p0: users.length })
+  )
+  if (!approved) await reload()
+}
 async function removeAccount(user: CampusUser) {
   if (busy.value) return
   try {
@@ -204,6 +227,15 @@ async function removeAccount(user: CampusUser) {
         <option value="all">{{ msg('全部状态') }}</option>
         <option v-for="item in statusOptions" :key="item.value" :value="item.value">{{ item.label }}</option>
       </select>
+      <van-button
+        v-if="statusFilter === 'pending' && ready && !error && pendingUsers.length"
+        type="primary"
+        :disabled="busy || loading"
+        :loading="busy"
+        @click="approvePage"
+      >
+        {{ msg('通过本页全部待审核账号') }}
+      </van-button>
       <van-button type="primary" icon="plus" :disabled="busy || loading || !ready" @click="openCreate">{{
         msg('新建账号')
       }}</van-button>

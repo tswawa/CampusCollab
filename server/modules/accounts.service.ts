@@ -189,7 +189,13 @@ export async function createRegisteredUser(db: AppDatabase, payload: Registratio
   assertCondition(isInstallationConfigured(db), 409, 'INSTALLATION_REQUIRED', '请先由部署管理员完成机构初始化')
   const user = await createUser(
     db,
-    { ...payload, approval: payload.role === 'teacher' || payload.isExternal ? 'pending' : 'approved' },
+    {
+      ...payload,
+      approval:
+        payload.role === 'teacher' || payload.isExternal || getSchool(db).studentApprovalRequired
+          ? 'pending'
+          : 'approved'
+    },
     undefined,
     true
   )
@@ -223,7 +229,10 @@ async function createUser(
     if (actor) assertCurrentAdmin(db, actor)
     if (selfRegistration) {
       assertCondition(isInstallationConfigured(db), 409, 'INSTALLATION_REQUIRED', '请先由部署管理员完成机构初始化')
-      assertCondition(getSchool(db).registrationEnabled, 403, 'REGISTRATION_CLOSED', '机构暂未开放自行注册')
+      const school = getSchool(db)
+      assertCondition(school.registrationEnabled, 403, 'REGISTRATION_CLOSED', '机构暂未开放自行注册')
+      payload.approval =
+        payload.role === 'teacher' || payload.isExternal || school.studentApprovalRequired ? 'pending' : 'approved'
     }
     const organization = validateOrganization(
       db,

@@ -134,14 +134,15 @@ async function register(
   })
   const result = await response.json()
   expect(response.status(), JSON.stringify(result)).toBe(201)
-  expect(result).toMatchObject({ ok: true, message: expect.any(String), data: null })
+  expect(result).toMatchObject({ ok: true, message: expect.any(String), data: { pending: role === 'teacher' } })
+  if (role === 'student') {
+    await expect(page).toHaveURL('/student/home')
+    return
+  }
   await expect(page).toHaveURL(url => url.pathname === '/register-success' && url.searchParams.get('role') === role)
-  await expect(
-    page.getByRole('heading', { name: role === 'student' ? '学生账号登记成功' : '登记申请已提交', exact: true })
-  ).toBeVisible()
+  await expect(page.getByRole('heading', { name: '登记申请已提交', exact: true })).toBeVisible()
   await expectHonestAuthCopy(page)
-  if (role === 'student') await expect(page.locator('.auth-shell p')).toHaveCount(0)
-  else await expect(page.locator('.auth-shell p')).toHaveText('请等待管理员审核，审核通过后可登录。')
+  await expect(page.locator('.auth-shell p')).toHaveText('请等待管理员审核，审核通过后可登录。')
 }
 
 async function expectProfile(page: Page, user: CampusUser) {
@@ -187,8 +188,7 @@ test('学生和教师通过真实表单注册，教师必须经独立管理员�
 
     await page.getByRole('button', { name: '校园账号登录', exact: true }).click()
     await register(page, 'student', studentAccount, studentName, organization)
-    await page.getByRole('button', { name: '前往登录', exact: true }).click()
-    const studentSession = await login(page, studentAccount, '/student/home')
+    const studentSession = await api<SessionData>(page, '/auth/session')
     expect(studentSession.user).toMatchObject({
       role: 'student',
       name: studentName,

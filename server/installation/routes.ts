@@ -24,6 +24,9 @@ export function registerInstallationRoutes(app: FastifyInstance, db: AppDatabase
             name: Type.String({ minLength: 1, maxLength: 64 }),
             platformName: Type.String({ minLength: 1, maxLength: 64 }),
             timezone: Type.String({ minLength: 1, maxLength: 100 }),
+            registrationPolicy: Type.Optional(
+              Type.Union([Type.Literal('open'), Type.Literal('approval'), Type.Literal('closed')], { default: 'open' })
+            ),
             admin: Type.Object(
               {
                 account: Type.String({ minLength: 4, maxLength: 254 }),

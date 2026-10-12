@@ -145,6 +145,7 @@ async function install(
   assertEmptyInstallation(db)
   authorize()
   validateInput(input)
+  const registrationPolicy = input.registrationPolicy ?? 'open'
   const passwordHash = await hashPassword(input.admin.password)
   return db.transaction(() => {
     // Hashing yields to other requests: every authority/state check must be repeated.
@@ -155,12 +156,15 @@ async function install(
     if (input.locale === 'en') applyEnglishSeeds(db)
     db.run(
       `UPDATE school_settings SET name=?,platform_name=?,badge=?,announcement='',logo_file_id=NULL,logo_url='',
-      timezone=?,default_locale=?,require_department=?,require_grade=?,require_class=?,version=version+1,updated_at=? WHERE id=1`,
+      timezone=?,default_locale=?,registration_enabled=?,student_approval_required=?,
+      require_department=?,require_grade=?,require_class=?,version=version+1,updated_at=? WHERE id=1`,
       input.name.trim(),
       input.platformName.trim(),
       input.locale === 'en' ? 'Campus' : '校内',
       input.timezone,
       input.locale,
+      registrationPolicy === 'closed' ? 0 : 1,
+      registrationPolicy === 'approval' ? 1 : 0,
       input.locale === 'zh-CN' ? 1 : 0,
       input.locale === 'zh-CN' ? 1 : 0,
       input.locale === 'zh-CN' ? 1 : 0,

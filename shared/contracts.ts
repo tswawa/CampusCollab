@@ -44,6 +44,7 @@ export interface SchoolProfile {
   timezone: string
   defaultLocale: AppLocale
   registrationEnabled: boolean
+  studentApprovalRequired: boolean
   requireDepartment: boolean
   requireGrade: boolean
   requireClass: boolean
@@ -218,6 +219,7 @@ export interface InstallationInput {
   name: string
   platformName: string
   timezone: string
+  registrationPolicy?: 'open' | 'approval' | 'closed'
   admin: { account: string; name: string; password: string }
 }
 export interface InstallationResult {

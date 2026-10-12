@@ -4,7 +4,13 @@ import os from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
 import { spawnSync } from 'node:child_process'
-import type { InstallationInput, InstallationResult, InstallationStatus, SessionData } from '../../shared/contracts.js'
+import type {
+  CampusUser,
+  InstallationInput,
+  InstallationResult,
+  InstallationStatus,
+  SessionData
+} from '../../shared/contracts.js'
 import { buildApp } from '../app.js'
 import { AppDatabase, nowIso } from '../db/database.js'
 import { loadConfig } from '../config.js'
@@ -12,7 +18,7 @@ import { getSchool } from '../db/models.js'
 import { installFromTrustedHost, setupTokenPath } from '../installation/service.js'
 import { createAdminManagedUser } from '../modules/accounts.service.js'
 import { seedWorkflowDemo } from '../demo/workflow-seed.js'
-import { anonymousSession, closeTestApp, cookieFrom, dataOf, testOrigin, type TestContext } from './helpers.js'
+import { anonymousSession, closeTestApp, cookieFrom, dataOf, login, testOrigin, type TestContext } from './helpers.js'
 
 const token = 'fixture-installation-code-000000000000000000000001'
 const input = (): InstallationInput => ({
@@ -165,6 +171,82 @@ test('protected web setup atomically creates an institution and administrator se
     assert.equal(dataOf<SessionData>(refreshed).locale, 'zh-CN')
     assert.equal(dataOf<SessionData>(refreshed).user?.locale, 'zh-CN')
     assert.equal(refreshed.headers['content-language'], 'zh-CN')
+  } finally {
+    await closeTestApp(context)
+  }
+})
+
+test('closed registration policy rejects student self-registration', async () => {
+  const context = await fresh()
+  try {
+    const installed = await context.app.inject({
+      method: 'POST',
+      url: '/api/installation',
+      headers: await setupHeaders(context),
+      payload: { ...input(), registrationPolicy: 'closed' }
+    })
+    assert.equal(installed.statusCode, 201, installed.body)
+    const registration = await context.app.inject({
+      method: 'POST',
+      url: '/api/auth/register',
+      headers: await setupHeaders(context),
+      payload: { role: 'student', account: 'closed-student', name: 'Student', password: 'Cedar!Harbor9' }
+    })
+    assert.equal(registration.statusCode, 403)
+    assert.equal(registration.json().code, 'REGISTRATION_CLOSED')
+  } finally {
+    await closeTestApp(context)
+  }
+})
+
+test('approval registration policy blocks student login until an administrator approves the account', async () => {
+  const context = await fresh()
+  try {
+    const installed = await context.app.inject({
+      method: 'POST',
+      url: '/api/installation',
+      headers: await setupHeaders(context),
+      payload: { ...input(), registrationPolicy: 'approval' }
+    })
+    assert.equal(installed.statusCode, 201, installed.body)
+    const adminHeaders = {
+      origin: testOrigin,
+      cookie: cookieFrom(installed),
+      'x-csrf-token': dataOf<InstallationResult>(installed).session.csrfToken
+    }
+    const headers = await setupHeaders(context)
+    const credentials = { account: 'approval-student', password: 'Cedar!Harbor9' }
+    const registration = await context.app.inject({
+      method: 'POST',
+      url: '/api/auth/register',
+      headers,
+      payload: { ...credentials, role: 'student', name: 'Student' }
+    })
+    assert.equal(registration.statusCode, 201, registration.body)
+    assert.deepEqual(dataOf<{ pending: boolean }>(registration), { pending: true })
+    const pendingLogin = await context.app.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      headers,
+      payload: credentials
+    })
+    assert.equal(pendingLogin.statusCode, 403)
+    assert.equal(pendingLogin.json().code, 'ACCOUNT_PENDING')
+    const accounts = await context.app.inject({
+      method: 'GET',
+      url: '/api/admin/accounts?approval=pending',
+      headers: adminHeaders
+    })
+    const student = dataOf<{ items: CampusUser[] }>(accounts).items.find(user => user.account === credentials.account)
+    assert.ok(student)
+    const approved = await context.app.inject({
+      method: 'POST',
+      url: `/api/admin/accounts/${student.id}/status`,
+      headers: adminHeaders,
+      payload: { approval: 'approved', version: student.version }
+    })
+    assert.equal(approved.statusCode, 200, approved.body)
+    assert.equal((await login(context, credentials.account, credentials.password)).user.id, student.id)
   } finally {
     await closeTestApp(context)
   }

@@ -301,6 +301,7 @@ export function registerFileAndSettingRoutes(app: FastifyInstance, db: AppDataba
             timezone: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
             defaultLocale: Type.Optional(Type.Union([Type.Literal('zh-CN'), Type.Literal('en')])),
             registrationEnabled: Type.Optional(Type.Boolean()),
+            studentApprovalRequired: Type.Optional(Type.Boolean()),
             requireDepartment: Type.Optional(Type.Boolean()),
             requireGrade: Type.Optional(Type.Boolean()),
             requireClass: Type.Optional(Type.Boolean()),
@@ -344,6 +345,7 @@ export function registerFileAndSettingRoutes(app: FastifyInstance, db: AppDataba
       const settings = {
         defaultLocale: body.defaultLocale ?? current.defaultLocale,
         registrationEnabled: body.registrationEnabled ?? current.registrationEnabled,
+        studentApprovalRequired: body.studentApprovalRequired ?? current.studentApprovalRequired,
         requireDepartment: body.requireDepartment ?? current.requireDepartment,
         requireGrade: body.requireGrade ?? current.requireGrade,
         requireClass: body.requireClass ?? current.requireClass,
@@ -372,7 +374,7 @@ export function registerFileAndSettingRoutes(app: FastifyInstance, db: AppDataba
       db.transaction(() => {
         const result = db.run(
           `UPDATE school_settings SET name = ?, platform_name = ?, badge = ?, announcement = ?,
-        primary_color = ?, timezone = ?, default_locale = ?, registration_enabled = ?, require_department = ?, require_grade = ?,
+        primary_color = ?, timezone = ?, default_locale = ?, registration_enabled = ?, student_approval_required = ?, require_department = ?, require_grade = ?,
         require_class = ?, allow_external_participants = ?, retention_days = ?, logo_file_id = COALESCE(?, logo_file_id), logo_url = CASE WHEN ? IS NULL THEN logo_url ELSE ? END,
         version = version + 1, updated_at = ? WHERE id = 1 AND version = ?`,
           body.name.trim(),
@@ -383,6 +385,7 @@ export function registerFileAndSettingRoutes(app: FastifyInstance, db: AppDataba
           timezone,
           settings.defaultLocale,
           Number(settings.registrationEnabled),
+          Number(settings.studentApprovalRequired),
           Number(settings.requireDepartment),
           Number(settings.requireGrade),
           Number(settings.requireClass),

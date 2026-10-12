@@ -13,6 +13,12 @@ export const setupCopy = {
     platform: '平台名称',
     platformPlaceholder: productNames['zh-CN'],
     timezone: '机构时区',
+    registration: '学生自助注册',
+    registrationOptions: {
+      open: { label: '开放，注册后立即可用', hint: '适合只在校园网内访问的站点。' },
+      approval: { label: '开放，需管理员审核', hint: '站点可从公网访问时推荐。' },
+      closed: { label: '不开放，由管理员创建账号', hint: '' }
+    },
     adminTitle: '建立首位管理员',
     name: '管理员姓名',
     account: '登录账号',
@@ -50,6 +56,15 @@ export const setupCopy = {
     platform: 'Platform name',
     platformPlaceholder: productNames.en,
     timezone: 'Institution time zone',
+    registration: 'Student self-registration',
+    registrationOptions: {
+      open: { label: 'Open, with immediate access', hint: 'Suitable for sites accessible only on the campus network.' },
+      approval: {
+        label: 'Open, with administrator approval',
+        hint: 'Recommended for sites accessible from the public internet.'
+      },
+      closed: { label: 'Closed; administrators create accounts', hint: '' }
+    },
     adminTitle: 'Create the first administrator',
     name: 'Administrator name',
     account: 'Login account',

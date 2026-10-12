@@ -49,6 +49,7 @@ test('空库不生成固定账号，注册登录使用服务端会话与 CSRF', 
       }
     })
     assert.equal(registration.statusCode, 201)
+    assert.deepEqual(dataOf<{ pending: boolean }>(registration), { pending: false })
     const raw = context.db.get('SELECT password_hash FROM users WHERE account_normalized = ?', '32409999')!
     assert.notEqual(raw.password_hash, 'Cedar!Harbor9')
     assert.match(String(raw.password_hash), /^scrypt\$/)

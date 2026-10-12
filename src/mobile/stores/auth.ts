@@ -64,9 +64,9 @@ export const useAuthStore = defineStore('campus-auth', {
     },
     async register(payload: RegistrationPayload) {
       if (!this.sessionReady) await this.refreshSession()
-      const result = await request<null>('/auth/register', { method: 'POST', body: payload })
+      const result = await request<{ pending: boolean }>('/auth/register', { method: 'POST', body: payload })
       this.registrationRole = payload.role
-      return result
+      return result.data
     },
     async logout() {
       await request<null>('/auth/logout', { method: 'POST', body: {} })

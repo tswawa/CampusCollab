@@ -26,7 +26,11 @@ test(`${locale}: 首次安装建立机构与管理员，成功后关闭安装入
   await page.locator('#setup-school').fill(institution)
   await page.locator('#setup-platform').fill(platform)
   await page.locator('#setup-timezone').fill(timezone)
+  await expect(page.locator('input[name="registrationPolicy"][value="open"]')).toBeChecked()
   await next().click()
+  await expect(page.locator('.setup-review')).toContainText(
+    english ? 'Open, with immediate access' : '开放，注册后立即可用'
+  )
   await page.setViewportSize({ width: 390, height: 844 })
   await page.locator('#setup-admin-name').fill(administrator)
   await page.locator('#setup-account').fill('FIRSTADMIN')
@@ -48,7 +52,14 @@ test(`${locale}: 首次安装建立机构与管理员，成功后关闭安装入
   expect(installed.status(), await installed.text()).toBe(201)
   expect((await installed.json()).data).toMatchObject({
     installation: { status: 'configured', locale, setupAvailable: false },
-    school: { name: institution, platformName: platform, defaultLocale: locale, timezone },
+    school: {
+      name: institution,
+      platformName: platform,
+      defaultLocale: locale,
+      timezone,
+      registrationEnabled: true,
+      studentApprovalRequired: false
+    },
     session: { locale, user: { role: 'admin', account: 'FIRSTADMIN', name: administrator } }
   })
   await expect(page).toHaveURL('/admin/home')

@@ -438,6 +438,9 @@ export const english = {
   请选择年级和班级: 'Choose a year and group.',
   '密码至少 8 位': 'Use at least 8 characters for the password.',
   账号已保存: 'Account saved',
+  通过本页全部待审核账号: 'Approve all pending accounts on this page',
+  '将通过本页 {p0} 个待审核账号。': 'This will approve {p0} pending accounts on this page.',
+  '已通过 {p0} 个账号': 'Approved {p0} accounts',
   账号状态已更新: 'Account status updated',
   '删除账号？': 'Delete this account?',
   '{p0}（{p1}）将无法继续登录；已有业务关联时请改为停用。':
@@ -895,6 +898,7 @@ export const english = {
   选填: 'Optional',
   注册与组织要求: 'Registration and organization requirements',
   开放注册: 'Allow registration',
+  学生注册需审核: 'Require approval for student registration',
   必须选择学院或部门: 'Require organization unit',
   必须选择年级: 'Require year',
   必须选择班级: 'Require group',

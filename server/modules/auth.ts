@@ -136,10 +136,10 @@ export function registerAuthRoutes(app: FastifyInstance, db: AppDatabase, sessio
       }
     },
     async (request, reply) => {
-      await createRegisteredUser(db, request.body as never)
+      const user = await createRegisteredUser(db, request.body as never)
       reply.code(201)
-      const body = request.body as { role: string; isExternal?: boolean }
-      return success(null, body.role === 'teacher' || body.isExternal ? '注册申请已提交' : '注册成功')
+      const pending = user.approval === 'pending'
+      return success({ pending }, pending ? '注册申请已提交' : '注册成功')
     }
   )
 

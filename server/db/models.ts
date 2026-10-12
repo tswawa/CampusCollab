@@ -90,6 +90,7 @@ export function getSchool(db: AppDatabase): SchoolProfile {
     timezone: text(row.timezone),
     defaultLocale: row.default_locale === 'en' ? 'en' : 'zh-CN',
     registrationEnabled: row.registration_enabled === undefined || bool(row.registration_enabled),
+    studentApprovalRequired: bool(row.student_approval_required),
     requireDepartment: row.require_department === undefined || bool(row.require_department),
     requireGrade: row.require_grade === undefined || bool(row.require_grade),
     requireClass: row.require_class === undefined || bool(row.require_class),

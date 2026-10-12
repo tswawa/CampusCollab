@@ -258,6 +258,13 @@ async function exportData() {
               ><van-switch v-model="form.registrationEnabled" :disabled="busy" :aria-label="msg('开放注册')"
             /></label>
             <label class="admin-switch-row"
+              ><span>{{ msg('学生注册需审核') }}</span
+              ><van-switch
+                v-model="form.studentApprovalRequired"
+                :disabled="busy || !form.registrationEnabled"
+                :aria-label="msg('学生注册需审核')"
+            /></label>
+            <label class="admin-switch-row"
               ><span>{{ msg('必须选择学院或部门') }}</span
               ><van-switch v-model="form.requireDepartment" :disabled="busy" :aria-label="msg('必须选择学院或部门')"
             /></label>

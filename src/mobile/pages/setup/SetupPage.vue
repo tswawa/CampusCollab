@@ -6,7 +6,7 @@ import { bootstrap } from '@/mobile/api/bootstrap'
 import { locale, setLocale, type Locale } from '@/mobile/i18n'
 import { useAuthStore } from '@/mobile/stores/auth'
 import { useSystemStore } from '@/mobile/stores/system'
-import type { InstallationResult } from '@/mobile/types'
+import type { InstallationInput, InstallationResult } from '@/mobile/types'
 import { setupCopy } from './setup-copy'
 import { productNames } from '../../../../shared/brand'
 
@@ -21,6 +21,7 @@ const errorBox = ref<HTMLElement>()
 const name = ref('')
 const platformName = ref<string>(productNames[edition.value])
 const timezone = ref('Asia/Shanghai')
+const registrationPolicy = ref<NonNullable<InstallationInput['registrationPolicy']>>('open')
 const adminName = ref('')
 const account = ref('')
 const password = ref('')
@@ -104,6 +105,7 @@ async function advance() {
         name: name.value.trim(),
         platformName: platformName.value.trim(),
         timezone: timezone.value.trim(),
+        registrationPolicy: registrationPolicy.value,
         setupToken: setupToken.value,
         admin: { account: account.value.trim(), name: adminName.value.trim(), password: password.value }
       }
@@ -219,11 +221,25 @@ async function retry() {
               }}<input id="setup-timezone" v-model="timezone" required maxlength="100" list="setup-zones"
             /></label>
             <datalist id="setup-zones"><option v-for="zone in zones" :key="zone" :value="zone" /></datalist>
+            <fieldset class="setup-registration" :disabled="busy">
+              <legend>{{ copy.registration }}</legend>
+              <label
+                v-for="(option, value) in copy.registrationOptions"
+                :key="value"
+                :class="{ selected: registrationPolicy === value }"
+              >
+                <input v-model="registrationPolicy" type="radio" name="registrationPolicy" :value="value" required />
+                <span
+                  >{{ option.label }}<small v-if="option.hint">{{ option.hint }}</small></span
+                >
+              </label>
+            </fieldset>
           </div>
           <div v-else-if="!installed" class="setup-fields">
             <div class="setup-review">
               <strong>{{ name }}</strong
               ><span>{{ edition === 'en' ? 'English' : '简体中文' }} · {{ timezone }}</span>
+              <span>{{ copy.registration }} · {{ copy.registrationOptions[registrationPolicy].label }}</span>
             </div>
             <div class="setup-field-pair">
               <label for="setup-admin-name"
@@ -528,6 +544,43 @@ async function retry() {
   line-height: 1.65;
   color: #718194;
   font-weight: 400;
+}
+.setup-registration {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+.setup-registration legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 650;
+}
+.setup-registration label {
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid #dbe3eb;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.setup-registration label.selected {
+  border-color: #225f94;
+  background: #f5f9fd;
+}
+.setup-registration input {
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 3px 0 0;
+  accent-color: #225f94;
+}
+.setup-registration span {
+  display: grid;
+  gap: 4px;
 }
 .setup-field-pair {
   display: grid;

@@ -3,6 +3,7 @@ import { locale, msg } from '@/mobile/i18n'
 import { computed, reactive, ref, watch } from 'vue'
 import { showToast } from 'vant'
 import { useRoute, useRouter } from 'vue-router'
+import { roleHome } from '@/router'
 import { useAuthStore } from '@/mobile/stores/auth'
 import { useCatalogStore } from '@/mobile/stores/catalog'
 import { useSystemStore } from '@/mobile/stores/system'
@@ -94,16 +95,27 @@ async function submit() {
         password: form.password
       }
   try {
-    await auth.register({
+    const { pending } = await auth.register({
       ...payload,
       locale: locale.value,
       email: form.email.trim() || undefined,
       externalId: form.externalId.trim() || undefined,
       isExternal: form.isExternal
     })
+    if (!pending) {
+      const signedIn = await auth.login(payload.account, payload.password).then(
+        () => true,
+        () => false
+      )
+      if (signedIn) {
+        await router.replace(roleHome(auth.role))
+        return
+      }
+    }
+    auth.registrationRole = payload.role
     await router.replace({
       path: '/register-success',
-      query: { role: role.value, pending: form.isExternal || role.value === 'teacher' ? '1' : undefined }
+      query: { role: payload.role, pending: pending ? '1' : undefined }
     })
   } catch (error) {
     if (!isCancelled(error)) {
@@ -262,7 +274,10 @@ async function submit() {
         <van-checkbox v-model="agreement" shape="square" icon-size="16px">
           <span style="font-size: 14px; color: var(--text)">{{ msg('我确认登记资料真实') }}</span>
         </van-checkbox>
-        <p v-if="!isStudent || form.isExternal" style="margin: 12px 0 0; font-size: 14px; color: var(--muted)">
+        <p
+          v-if="!isStudent || form.isExternal || system.school.studentApprovalRequired"
+          style="margin: 12px 0 0; font-size: 14px; color: var(--muted)"
+        >
           {{ msg('账号需管理员审核通过后方可登录。') }}
         </p>
       </div>
