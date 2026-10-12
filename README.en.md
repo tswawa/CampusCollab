@@ -1,22 +1,33 @@
-# CampusCollab
+<div align="center">
 
-**Publish campus tasks. Let students join. Review the work.**
+<img src="docs/logo.png" width="140" alt="CampusCollab icon" />
 
-[简体中文](README.md) · [Run locally](#run-locally) · [Documentation](docs/README.md)
+<h1>CampusCollab</h1>
+
+<p>Campus tasks and participation records for universities<br />
+Publish tasks · Sign-ups · Evidence · Review and corrections · Confirmed time · Closeout exports</p>
 
 [![CI](https://github.com/tswawa/CampusCollab/actions/workflows/ci.yml/badge.svg)](https://github.com/tswawa/CampusCollab/actions/workflows/ci.yml)
+![self-hosted](https://img.shields.io/badge/self--hosted-Node.js%2024%20%2B%20SQLite-0f766e)
+![languages: 中文 | English](https://img.shields.io/badge/languages-%E4%B8%AD%E6%96%87%20%7C%20English-1e60d5)
+[![license: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-1e60d5)](LICENSE)
 
-CampusCollab connects teachers who organize campus work with students who take part. Teachers publish tasks and set participation and submission requirements. Students find tasks, join, and submit their results. Teachers review the work, confirm participation time, and export the final records.
+[Features](#features) · [Run locally](#run-locally) · [Deploy](#deploy) · [Development](#development) · [Documentation](docs/README.md) · [简体中文](README.md)
 
-Each institution hosts its own instance and chooses English or Chinese during setup.
+</div>
 
-| Role | Workspace | Main actions |
-| --- | --- | --- |
-| Teacher / coordinator | Coordinator workspace | Publish tasks, manage participants, review submissions, export results |
-| Student / participant | Participant home and task hall | Find tasks, sign up, track progress, submit work |
-| Administrator | Admin console | Approve accounts, manage organizations and settings, transfer task ownership |
+CampusCollab connects teachers who organize campus work with students who take part. Teachers publish tasks and set participation and submission requirements; students find tasks, join, and submit their results; teachers review the work, confirm participation time, and export the final records. Each institution hosts its own instance and chooses English or Chinese during setup.
 
-## 1. Sign in and open your workspace
+- **Teachers / coordinators**: publish tasks, manage participants, review submissions and confirm time, then export CSV, Excel or ZIP at closeout.
+- **Students / participants**: find and join tasks in the task hall, submit what they did with photos, and follow the review.
+- **Administrators**: approve accounts, choose how students register, maintain the organization and institution settings, and transfer task ownership.
+- **Self-hosted**: Node.js 24 and built-in SQLite run on a single server, and the data stays on the institution's own server.
+
+![Coordinator roster with submissions, corrections, and confirmed participation](docs/screenshots/showcase-en-roster.png)
+
+## Features
+
+### 1. Sign in and open your workspace
 
 Sign in with your account. CampusCollab opens the workspace assigned to your role. Teachers land on a workspace with a **Publish task** entry, task counts, and pending reviews. Students see their participation progress and links to available tasks.
 
@@ -31,7 +42,7 @@ Sign in with your account. CampusCollab opens the workspace assigned to your rol
 
 Accounts that an administrator creates or resets must set a new password at the first sign-in, and everyone can change their password on the Profile page. After five failed sign-ins, the account is locked for up to 15 minutes; an administrator's password reset unlocks it at once.
 
-## 2. Publish a task
+### 2. Publish a task
 
 The four-step form takes the coordinator through task details; the schedule, places, evidence and review rules; contact details; and a final preview. Enter the task name, location, description, and checklist, then set the dates, places available, audience, required evidence, and participation method. The duration follows the start and end times and prefills the planned minutes.
 
@@ -44,7 +55,7 @@ The four-step form takes the coordinator through task details; the schedule, pla
 </tr>
 </table>
 
-## 3. Students join a task and submit their work
+### 3. Students join a task and submit their work
 
 The task hall lets students browse, search, and filter available work. Opening a task shows the schedule, location, requirements, and available places. A task can accept participants directly or collect applications for the coordinator to approve. After the work, students describe what they completed, record their time, and attach photos where required; they then return to the task page while the work awaits review.
 
@@ -57,11 +68,9 @@ The task hall lets students browse, search, and filter available work. Opening a
 </tr>
 </table>
 
-## 4. Review participants and follow up
+### 4. Review participants and follow up
 
 The coordinator's roster shows who has submitted, who needs a correction, and whose work is approved. Filter by status or search by name and ID. Existing CSV rosters can also be previewed and imported.
-
-![Coordinator roster with submissions, corrections, and confirmed participation](docs/screenshots/showcase-en-roster.png)
 
 A review can ask for a specific missing detail, such as the actual departure time. Each resubmission retains the earlier version and feedback. The coordinator approves a version and records the confirmed time; ready submissions can be reviewed in batches. In the review list, each submission shows the student's reported minutes and the planned minutes, prefilled as the confirmed time, and flags work submitted before the task started.
 
@@ -81,7 +90,7 @@ For group activities, the coordinator adds a shared activity record and confirms
 
 </details>
 
-## 5. Close out and export
+### 5. Close out and export
 
 Download a CSV, an Excel workbook, or a ZIP containing the roster and approved materials. The roster preserves completed, withdrawn, and incomplete outcomes. Later corrections create a new completion version and retain the earlier record.
 
@@ -89,7 +98,7 @@ Each row starts with the participant's name, student or staff number and externa
 
 <img src="docs/screenshots/showcase-en-export.png" width="640" alt="Completion record with the result version, ZIP, XLSX and CSV downloads, and the snapshot check" />
 
-## Administration
+### Administration
 
 Administrators approve accounts, manage organizations and institution settings, transfer task ownership, and handle notifications and data retention. They choose how students self-register (open, open with approval, or closed), can approve all pending accounts on a page at once, and reset passwords. Until the first task exists, the admin home shows a short getting-started checklist.
 

@@ -302,7 +302,7 @@ for (const language of ['zh-CN', 'en'] as const) {
         .locator('.workspace-metric')
         .filter({ has: page.getByText(label('确认分钟', 'Confirmed minutes'), { exact: true }) })
         .locator('strong')
-    ).toHaveText(/^525\s*min$/)
+    ).toHaveText(en ? /^525\s*min$/ : /^525\s*分钟$/)
     await page
       .getByLabel(label('结项原因或说明', 'Closeout reason or note'), { exact: true })
       .fill('Six confirmed; two incomplete. Synthetic demonstration.')
