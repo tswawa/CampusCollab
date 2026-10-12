@@ -54,6 +54,14 @@ export const useAuthStore = defineStore('campus-auth', {
       this.acceptSession(result.data)
       return result
     },
+    async changePassword(currentPassword: string, newPassword: string) {
+      const result = await request<SessionData>('/auth/password', {
+        method: 'POST',
+        body: { currentPassword, newPassword }
+      })
+      this.acceptSession(result.data)
+      return result
+    },
     async register(payload: RegistrationPayload) {
       if (!this.sessionReady) await this.refreshSession()
       const result = await request<null>('/auth/register', { method: 'POST', body: payload })

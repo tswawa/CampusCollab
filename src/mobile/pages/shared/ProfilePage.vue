@@ -88,7 +88,6 @@ async function logout() {
     <div style="font-size: 14px; font-weight: 700; color: #475569; margin: 0 4px 8px">{{ msg('校园身份资料') }}</div>
     <div class="surface-card" style="overflow: hidden; margin-bottom: 16px">
       <van-cell :title="msg('姓名')" :value="user.name" />
-      <van-cell :title="msg('账号用户 ID')" :value="user.id" />
       <van-cell
         :title="user.role === 'student' ? msg('学号') : user.role === 'teacher' ? msg('教工号') : msg('管理员账号')"
         :value="user.account"
@@ -103,6 +102,7 @@ async function logout() {
     <div style="font-size: 14px; font-weight: 700; color: #475569; margin: 0 4px 8px">{{ msg('平台选项') }}</div>
     <div class="surface-card" style="overflow: hidden; margin-bottom: 24px">
       <van-cell :title="msg('消息通知')" is-link to="/notifications" />
+      <van-cell :title="msg('修改密码')" is-link to="/account/password" />
     </div>
 
     <!-- 退出登录 -->

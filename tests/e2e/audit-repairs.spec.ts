@@ -37,6 +37,14 @@ async function login(baseURL: string, account: string, value = password): Promis
   expect(response.status(), await response.text()).toBe(200)
   const actor = { http, session: (await response.json()).data as SessionData, origin: baseURL }
   actors.push(actor)
+  if (actor.session.user?.mustChangePassword) {
+    const changed = await http.post('/api/auth/password', {
+      headers: { Origin: actor.origin, 'X-CSRF-Token': actor.session.csrfToken },
+      data: { currentPassword: value, newPassword: 'E2E@Renewed789' }
+    })
+    expect(changed.status(), await changed.text()).toBe(200)
+    actor.session = (await changed.json()).data as SessionData
+  }
   return actor
 }
 async function api<T>(actor: Actor, path: string, method = 'GET', body?: unknown): Promise<T> {

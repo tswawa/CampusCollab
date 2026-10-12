@@ -325,6 +325,9 @@ async function removeAccount(user: CampusUser) {
               class="admin-input-control"
               :placeholder="msg('至少 8 位')"
           /></label>
+          <p style="margin: -8px 0 14px; font-size: 12px; color: var(--muted)">
+            {{ msg('用户首次登录时需要修改这个密码。') }}
+          </p>
           <label class="admin-field-label"
             ><span>{{ msg('所属学院 / 部门') }}</span
             ><select v-model="form.departmentId" :disabled="busy" class="admin-input-control">

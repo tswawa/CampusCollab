@@ -126,6 +126,9 @@ async function login() {
       <van-button type="primary" block class="auth-submit-btn" :loading="submitting" @click="login">{{
         msg('登 录')
       }}</van-button>
+      <p style="margin: 12px 0 0; text-align: center; font-size: 12px; color: var(--muted)">
+        {{ msg('忘记密码？请联系学校管理员重置。') }}
+      </p>
 
       <div class="auth-footer-links" style="justify-content: center; margin-top: 24px">
         <button class="text-link" @click="router.push('/register')">{{ msg('注册账号') }}</button>

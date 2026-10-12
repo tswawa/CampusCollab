@@ -44,6 +44,12 @@ const router = createRouter({
       meta: { public: true }
     },
     {
+      path: '/account/password',
+      name: 'change-password',
+      component: () => import('@/mobile/pages/shared/ChangePasswordPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/admin',
       component: () => import('@/mobile/pages/admin/AdminLayout.vue'),
       redirect: '/admin/home',
@@ -205,7 +211,7 @@ const router = createRouter({
   scrollBehavior: to => (to.hash ? { el: to.hash, top: 88 } : { top: 0 })
 })
 
-function roleHome(role?: UserRole) {
+export function roleHome(role?: UserRole) {
   if (role === 'admin') return '/admin/home'
   return role === 'teacher' ? '/teacher/home' : '/student/home'
 }
@@ -226,10 +232,13 @@ router.beforeEach(async to => {
   if (to.meta.requiresAuth && !auth.isLoggedIn) {
     return { path: '/login', query: { redirect: to.fullPath } }
   }
+  if (auth.currentUser?.mustChangePassword && to.name !== 'change-password') {
+    return { name: 'change-password' }
+  }
   if (
     auth.role === 'admin' &&
     !to.path.startsWith('/admin') &&
-    !['notifications', 'profile', 'task-workflow'].includes(String(to.name))
+    !['notifications', 'profile', 'task-workflow', 'change-password'].includes(String(to.name))
   ) {
     if (to.name === 'task-detail') return { path: '/admin/tasks', query: { task: String(to.params.id) } }
     return '/admin/home'

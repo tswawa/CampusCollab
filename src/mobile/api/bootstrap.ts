@@ -21,11 +21,13 @@ export function bootstrap(force = false): Promise<boolean> {
       // 先确认身份，再请求按角色裁剪的字典，避免匿名响应覆盖管理员字典。
       await useAuthStore().refreshSession()
       pendingGeneration = requestGeneration()
-      await Promise.all([
-        useSystemStore().fetchSchool(),
-        useSystemStore().fetchInstallation(),
-        useCatalogStore().fetchCatalog()
-      ])
+      if (!useAuthStore().currentUser?.mustChangePassword) {
+        await Promise.all([
+          useSystemStore().fetchSchool(),
+          useSystemStore().fetchInstallation(),
+          useCatalogStore().fetchCatalog()
+        ])
+      }
       bootState.ready = true
       return true
     } catch (error) {

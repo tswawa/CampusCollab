@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, request, test, type Page } from '@playwright/test'
+import type { SessionData } from '../../shared/contracts.js'
 import { disposeInstitutionSession, setInstitutionLocale } from './institution.js'
 
 async function noPersonalLanguageSwitch(page: Page) {
@@ -11,6 +12,57 @@ test.afterEach(async ({ browser, baseURL }) => {
 })
 test.afterAll(async ({ browser }) => {
   await disposeInstitutionSession(browser)
+})
+
+test('管理员创建的学生账号必须修改初始密码后才能进入首页', async ({ browser, baseURL }) => {
+  await setInstitutionLocale(browser, 'zh-CN', baseURL)
+  const admin = await request.newContext({ baseURL })
+  const student = await browser.newContext({ baseURL })
+  try {
+    const anonymousResponse = await admin.get('/api/auth/session')
+    expect(anonymousResponse.status()).toBe(200)
+    const anonymous = (await anonymousResponse.json()).data as SessionData
+    const login = await admin.post('/api/auth/login', {
+      headers: { Origin: new URL(baseURL!).origin, 'X-CSRF-Token': anonymous.csrfToken },
+      data: { account: 'E2EADMIN', password: 'E2E@Browser123' }
+    })
+    expect(login.status(), await login.text()).toBe(200)
+    const session = (await login.json()).data as SessionData
+    const account = `B2STUDENT${Date.now()}`
+    const initialPassword = 'E2E@Initial456'
+    const created = await admin.post('/api/admin/accounts', {
+      headers: { Origin: new URL(baseURL!).origin, 'X-CSRF-Token': session.csrfToken },
+      data: {
+        role: 'student',
+        account,
+        name: 'Fictional password-change student',
+        departmentId: 'dept-cs',
+        gradeId: 'grade-2024',
+        classId: 'class-24se1',
+        password: initialPassword,
+        approval: 'approved'
+      }
+    })
+    expect(created.status(), await created.text()).toBe(201)
+
+    const page = await student.newPage()
+    await page.goto('/login')
+    await page.getByLabel('登录账号', { exact: true }).fill(account)
+    await page.getByLabel('登录密码', { exact: true }).fill(initialPassword)
+    await page.getByRole('button', { name: '登 录', exact: true }).click()
+    await expect(page).toHaveURL('/account/password')
+    await expect(page.getByRole('heading', { name: '设置新密码', exact: true })).toBeVisible()
+    await page.goto('/student/home')
+    await expect(page).toHaveURL('/account/password')
+    await page.getByLabel('当前密码', { exact: true }).fill(initialPassword)
+    await page.getByLabel('新密码', { exact: true }).fill('E2E@Renewed789')
+    await page.getByLabel('确认新密码', { exact: true }).fill('E2E@Renewed789')
+    await page.getByRole('button', { name: '更新密码', exact: true }).click()
+    await expect(page).toHaveURL('/student/home')
+  } finally {
+    await student.close()
+    await admin.dispose()
+  }
 })
 
 test('管理员保存机构语言后，已有成员会话和公共入口统一采用新版本', async ({ browser, page, baseURL }, testInfo) => {
