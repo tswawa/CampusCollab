@@ -11,7 +11,10 @@ test('every literal application error code has an English display resource', () 
   const walk = (directory: string) => {
     for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
       const file = path.join(directory, entry.name)
-      if (entry.isDirectory()) { if (entry.name !== 'tests') walk(file); continue }
+      if (entry.isDirectory()) {
+        if (entry.name !== 'tests') walk(file)
+        continue
+      }
       if (!file.endsWith('.ts')) continue
       const source = ts.createSourceFile(file, fs.readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true)
       const inspect = (node: ts.Node) => {
@@ -29,10 +32,23 @@ test('every literal application error code has an English display resource', () 
 })
 
 test('batch failures are localized by code while task titles and authored feedback remain unchanged', () => {
-  const original = { ok: true, code: 'SUCCESS', message: '操作成功', data: {
-    title: '用户原文标题', feedback: '用户原文反馈',
-    results: [{ participantId: 'fixture', ok: false, code: 'WORKFLOW_REVISION_STALE', message: '待审材料已变化，请核对最新版本' }]
-  } }
+  const original = {
+    ok: true,
+    code: 'SUCCESS',
+    message: '操作成功',
+    data: {
+      title: '用户原文标题',
+      feedback: '用户原文反馈',
+      results: [
+        {
+          participantId: 'fixture',
+          ok: false,
+          code: 'WORKFLOW_REVISION_STALE',
+          message: '待审材料已变化，请核对最新版本'
+        }
+      ]
+    }
+  }
   const english = JSON.parse(localizeApiPayload(JSON.stringify(original), 'en'))
   assert.equal(english.message, 'Success.')
   assert.equal(english.data.title, original.data.title)

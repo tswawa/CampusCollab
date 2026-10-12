@@ -5,7 +5,10 @@ import { computed } from 'vue'
 import { applyDefaultLocale, english, locale, msg, resourceKeys, setLocale } from './index'
 import { instantToLocalInput, setSchoolTimezone, zonedLocalToInstant, formatTimestamp } from '../utils/date'
 import { memberStatusMeta, proofTypeLabels } from '../utils/task'
-afterEach(() => { setLocale('zh-CN', false); setSchoolTimezone('Asia/Shanghai') })
+afterEach(() => {
+  setLocale('zh-CN', false)
+  setSchoolTimezone('Asia/Shanghai')
+})
 
 test('all bilingual resources preserve interpolation parameters and have English copy', () => {
   assert.ok(resourceKeys.length > 500)
@@ -23,7 +26,8 @@ test('institution edition changes are reactive without changing role or status i
   assert.equal(label.value, 'Changes requested')
   assert.equal(msg('教师'), 'Coordinator')
   assert.equal(proofTypeLabels.image, 'Photos')
-  assert.equal(state.role, 'teacher'); assert.equal(state.status, 'changes_requested')
+  assert.equal(state.role, 'teacher')
+  assert.equal(state.status, 'changes_requested')
   assert.equal(msg('共 {p0} 项', { p0: 1000 }), '1,000 items')
 })
 test('institution locale overrides any earlier browser or session locale', () => {

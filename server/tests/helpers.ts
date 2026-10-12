@@ -24,11 +24,23 @@ export async function createTestApp(): Promise<TestContext> {
       appOrigins: [testOrigin],
       secureCookie: false,
       serveClient: false,
-      mail: { enabled: false, host: '', port: 587, secure: false, user: '', password: '', from: '', pollIntervalMs: 15000 }
+      mail: {
+        enabled: false,
+        host: '',
+        port: 587,
+        secure: false,
+        user: '',
+        password: '',
+        from: '',
+        pollIntervalMs: 15000
+      }
     }
   })
   // Most suites exercise an existing deployment. Installation has its own fresh-DB fixtures.
-  built.db.run("UPDATE installation_state SET configured_at=?,source='fixture' WHERE id=1 AND configured_at IS NULL", new Date().toISOString())
+  built.db.run(
+    "UPDATE installation_state SET configured_at=?,source='fixture' WHERE id=1 AND configured_at IS NULL",
+    new Date().toISOString()
+  )
   return { ...built, root }
 }
 
@@ -59,7 +71,8 @@ export async function anonymousSession(context: TestContext) {
 export async function login(context: TestContext, account: string, password: string) {
   const anonymous = await anonymousSession(context)
   const response = await context.app.inject({
-    method: 'POST', url: '/api/auth/login',
+    method: 'POST',
+    url: '/api/auth/login',
     headers: { origin: testOrigin, cookie: anonymous.cookie, 'x-csrf-token': anonymous.csrf },
     payload: { account, password }
   })
@@ -70,6 +83,11 @@ export async function login(context: TestContext, account: string, password: str
 
 export async function createAdmin(context: TestContext, account = 'ADMIN001', password = 'Admin@123') {
   return createAdminManagedUser(context.db, {
-    role: 'admin', account, name: '测试管理员', departmentId: 'dept-admin', password, approval: 'approved'
+    role: 'admin',
+    account,
+    name: '测试管理员',
+    departmentId: 'dept-admin',
+    password,
+    approval: 'approved'
   })
 }

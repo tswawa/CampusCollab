@@ -42,20 +42,38 @@ const mutationMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 export async function buildApp(options: BuildAppOptions = {}): Promise<BuiltApp> {
   const config = loadConfig(options.config)
   const db = new AppDatabase(config)
-  try { db.migrate() } catch (error) { db.close(); throw error }
+  try {
+    db.migrate()
+  } catch (error) {
+    db.close()
+    throw error
+  }
   const sessions = new SessionService(db, config)
   const app = Fastify({
-    logger: options.logger === false ? false : {
-      level: config.nodeEnv === 'test' ? 'silent' : 'info',
-      redact: {
-        paths: [
-          'req.headers.cookie', 'req.headers.x-csrf-token', 'res.headers.set-cookie',
-          'body.password', 'body.admin.password', 'body.setupToken', 'req.body.admin.password', 'req.body.setupToken',
-          'setupToken', 'password', 'password_hash', 'token', 'csrfToken'
-        ],
-        censor: '[REDACTED]'
-      }
-    },
+    logger:
+      options.logger === false
+        ? false
+        : {
+            level: config.nodeEnv === 'test' ? 'silent' : 'info',
+            redact: {
+              paths: [
+                'req.headers.cookie',
+                'req.headers.x-csrf-token',
+                'res.headers.set-cookie',
+                'body.password',
+                'body.admin.password',
+                'body.setupToken',
+                'req.body.admin.password',
+                'req.body.setupToken',
+                'setupToken',
+                'password',
+                'password_hash',
+                'token',
+                'csrfToken'
+              ],
+              censor: '[REDACTED]'
+            }
+          },
     trustProxy: config.trustProxy,
     ajv: { customOptions: { removeAdditional: false } },
     bodyLimit: 12 * 1024 * 1024
@@ -63,25 +81,27 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<BuiltApp>
 
   await app.register(cookie)
   await app.register(helmet, {
-    contentSecurityPolicy: config.serveClient ? {
-      directives: {
-        defaultSrc: ["'self'"],
-        imgSrc: ["'self'", 'data:', 'blob:'],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'"],
-        connectSrc: ["'self'"],
-        objectSrc: ["'none'"],
-        baseUri: ["'self'"],
-        frameAncestors: ["'none'"]
-      }
-    } : false,
+    contentSecurityPolicy: config.serveClient
+      ? {
+          directives: {
+            defaultSrc: ["'self'"],
+            imgSrc: ["'self'", 'data:', 'blob:'],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'"],
+            connectSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            frameAncestors: ["'none'"]
+          }
+        }
+      : false,
     crossOriginResourcePolicy: { policy: 'same-origin' },
     strictTransportSecurity: config.secureCookie ? undefined : false
   })
   await app.register(rateLimit, {
     global: false,
     hook: 'preHandler',
-    keyGenerator: (request) => `${request.ip}:${request.url.split('?')[0]}`
+    keyGenerator: request => `${request.ip}:${request.url.split('?')[0]}`
   })
   await app.register(multipart, {
     limits: { files: 1, fields: 4, fileSize: 10 * 1024 * 1024, parts: 5 }
@@ -89,7 +109,9 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<BuiltApp>
 
   app.setErrorHandler(async (error, request, reply) => {
     if (error instanceof AppError) {
-      return reply.code(error.statusCode).send({ ok: false, message: error.message, code: error.code, params: error.params })
+      return reply
+        .code(error.statusCode)
+        .send({ ok: false, message: error.message, code: error.code, params: error.params })
     }
     const typed = error as Error & { validation?: unknown; statusCode?: number; code?: string }
     if (typed.validation) {
@@ -105,7 +127,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<BuiltApp>
     return reply.code(500).send({ ok: false, message: '服务器暂时无法处理请求', code: 'INTERNAL_ERROR' })
   })
 
-  app.addHook('preValidation', async (request) => {
+  app.addHook('preValidation', async request => {
     if (request.url.startsWith('/api/') && mutationMethods.has(request.method)) {
       sessions.verifyMutation(request)
       if (request.url.split('?')[0] !== '/api/installation' && !isInstallationConfigured(db)) {
@@ -114,8 +136,13 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<BuiltApp>
     }
   })
   app.addHook('onSend', async (request, reply, payload) => {
-    if (request.url.startsWith('/api/') && !reply.hasHeader('cache-control')) reply.header('Cache-Control', 'private, no-store')
-    if (request.url.startsWith('/api/') && String(reply.getHeader('content-type')).includes('application/json') && typeof payload === 'string') {
+    if (request.url.startsWith('/api/') && !reply.hasHeader('cache-control'))
+      reply.header('Cache-Control', 'private, no-store')
+    if (
+      request.url.startsWith('/api/') &&
+      String(reply.getHeader('content-type')).includes('application/json') &&
+      typeof payload === 'string'
+    ) {
       const locale = resolveRequestLocale(request, db, sessions)
       reply.header('Content-Language', locale).header('Vary', 'Cookie')
       return localizeApiPayload(payload, locale)
@@ -158,6 +185,9 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<BuiltApp>
   })
 
   const stopMail = startMailDispatcher(db)
-  app.addHook('onClose', async () => { await stopMail(); db.close() })
+  app.addHook('onClose', async () => {
+    await stopMail()
+    db.close()
+  })
   return { app, db, config }
 }

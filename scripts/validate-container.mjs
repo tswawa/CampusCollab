@@ -11,17 +11,29 @@ const volume = `campus-validation-${token}`
 const container = `${volume}-app`
 const origin = 'http://127.0.0.1:4290'
 const environment = ['-e', `APP_ORIGIN=${origin}`, '-e', 'ALLOW_INSECURE_COOKIE=true', '-e', 'MAIL_ENABLED=false']
-const institution = { locale: 'en', name: 'Fictional Container Campus', platformName: 'Container Collaboration', timezone: 'Europe/London',
-  admin: { account: 'CONTAINERADMIN', name: 'Fictional container administrator', password: 'Container@Example123' } }
-const adminEnvironment = Object.entries({ ADMIN_LOCALE: institution.locale, SCHOOL_NAME: institution.name,
-  PLATFORM_NAME: institution.platformName, SCHOOL_TIMEZONE: institution.timezone, ADMIN_ACCOUNT: institution.admin.account,
-  ADMIN_NAME: institution.admin.name, ADMIN_PASSWORD: institution.admin.password }).flatMap(([key, value]) => ['-e', `${key}=${value}`])
+const institution = {
+  locale: 'en',
+  name: 'Fictional Container Campus',
+  platformName: 'Container Collaboration',
+  timezone: 'Europe/London',
+  admin: { account: 'CONTAINERADMIN', name: 'Fictional container administrator', password: 'Container@Example123' }
+}
+const adminEnvironment = Object.entries({
+  ADMIN_LOCALE: institution.locale,
+  SCHOOL_NAME: institution.name,
+  PLATFORM_NAME: institution.platformName,
+  SCHOOL_TIMEZONE: institution.timezone,
+  ADMIN_ACCOUNT: institution.admin.account,
+  ADMIN_NAME: institution.admin.name,
+  ADMIN_PASSWORD: institution.admin.password
+}).flatMap(([key, value]) => ['-e', `${key}=${value}`])
 function docker(args, input) {
   const result = spawnSync('docker', args, { encoding: 'utf8', input, timeout: 60000 })
   assert.equal(result.status, 0, `${args.slice(0, 3).join(' ')}: ${result.stderr || result.error || result.stdout}`)
   return result.stdout.trim()
 }
-const run = (args, input, extraEnvironment = []) => docker(['run', '--rm', '-i', '-v', `${volume}:/app/data`, ...environment, ...extraEnvironment, image, ...args], input)
+const run = (args, input, extraEnvironment = []) =>
+  docker(['run', '--rm', '-i', '-v', `${volume}:/app/data`, ...environment, ...extraEnvironment, image, ...args], input)
 const node = code => run(['node', '--input-type=module'], code)
 async function assertConfiguredInstallation() {
   const response = await fetch(`${origin}/api/installation`, { headers: { 'accept-language': 'zh-CN' } })
@@ -39,7 +51,9 @@ async function assertConfiguredInstallation() {
 }
 async function waitForHealth() {
   for (let attempt = 0; attempt < 40; attempt++) {
-    try { if ((await fetch(`${origin}/api/health`)).ok) return } catch {}
+    try {
+      if ((await fetch(`${origin}/api/health`)).ok) return
+    } catch {}
     await new Promise(resolve => setTimeout(resolve, 250))
   }
   throw new Error('Isolated application did not become healthy')
@@ -83,11 +97,30 @@ try {
       fs.mkdirSync(db.config.uploadDir,{recursive:true});fs.writeFileSync(db.config.uploadDir+'/marker.txt','original');
     }finally{db.close()}
   `)
-  docker(['run', '-d', '--name', container, '--label', 'campus.validation=true', '-p', '127.0.0.1:4290:3000', '-v', `${volume}:/app/data`, ...environment, image])
+  docker([
+    'run',
+    '-d',
+    '--name',
+    container,
+    '--label',
+    'campus.validation=true',
+    '-p',
+    '127.0.0.1:4290:3000',
+    '-v',
+    `${volume}:/app/data`,
+    ...environment,
+    image
+  ])
   createdContainer = true
   let ready = false
   for (let attempt = 0; attempt < 40; attempt++) {
-    try { const response = await fetch(`${origin}/api/health`); if (response.ok) { ready = true; break } } catch {}
+    try {
+      const response = await fetch(`${origin}/api/health`)
+      if (response.ok) {
+        ready = true
+        break
+      }
+    } catch {}
     await new Promise(resolve => setTimeout(resolve, 250))
   }
   assert.ok(ready, 'Container health endpoint failed')
@@ -99,11 +132,22 @@ try {
   assert.equal(anonymous.user, null)
   assert.equal(anonymous.locale, institution.locale)
   assert.equal(anonymous.timezone, institution.timezone)
-  const cookie = anonymousResponse.headers.getSetCookie().map(value => value.split(';', 1)[0]).join('; ')
+  const cookie = anonymousResponse.headers
+    .getSetCookie()
+    .map(value => value.split(';', 1)[0])
+    .join('; ')
   assert.ok(cookie, 'Anonymous session did not issue a cookie')
-  const loginResponse = await fetch(`${origin}/api/auth/login`, { method: 'POST',
-    headers: { origin, cookie, 'x-csrf-token': anonymous.csrfToken, 'content-type': 'application/json', 'accept-language': 'zh-CN' },
-    body: JSON.stringify({ account: institution.admin.account, password: institution.admin.password }) })
+  const loginResponse = await fetch(`${origin}/api/auth/login`, {
+    method: 'POST',
+    headers: {
+      origin,
+      cookie,
+      'x-csrf-token': anonymous.csrfToken,
+      'content-type': 'application/json',
+      'accept-language': 'zh-CN'
+    },
+    body: JSON.stringify({ account: institution.admin.account, password: institution.admin.password })
+  })
   assert.equal(loginResponse.status, 200)
   assert.equal(loginResponse.headers.get('content-language'), institution.locale)
   const login = (await loginResponse.json()).data
@@ -119,11 +163,21 @@ try {
   assert.ok(source['server/db/migrations/006_installation.sql'])
   assert.ok(source['server/installation/service.ts'])
   assert.ok(source['SOURCE-MANIFEST.json'])
-  assert.ok(!Object.keys(source).some(name => /(^|\/)(data|uploads|backups|node_modules|\.git|\.narrafork)(\/|$)/.test(name) || /(^|\/)\.env(?!\.example$)/.test(name)))
+  assert.ok(
+    !Object.keys(source).some(
+      name =>
+        /(^|\/)(data|uploads|backups|node_modules|\.git|\.narrafork)(\/|$)/.test(name) ||
+        /(^|\/)\.env(?!\.example$)/.test(name)
+    )
+  )
   const manifest = JSON.parse(strFromU8(source['SOURCE-MANIFEST.json']))
   assert.ok(manifest.files.length > 250)
   // A second instance using the same volume must remain excluded while idle.
-  const concurrent = spawnSync('docker', ['run', '--rm', '-v', `${volume}:/app/data`, ...environment, image, 'npm', 'run', 'db:migrate'], { encoding: 'utf8', timeout: 60000 })
+  const concurrent = spawnSync(
+    'docker',
+    ['run', '--rm', '-v', `${volume}:/app/data`, ...environment, image, 'npm', 'run', 'db:migrate'],
+    { encoding: 'utf8', timeout: 60000 }
+  )
   assert.notEqual(concurrent.status, 0)
   assert.match(`${concurrent.stdout}${concurrent.stderr}`, /数据库正在使用/)
   // Strong kill must release kernel ownership without a graceful close hook.
@@ -133,11 +187,17 @@ try {
   await assertConfiguredInstallation()
   docker(['stop', '--time', '10', container])
   run(['npm', 'run', 'db:backup'])
-  const backup = node(`import fs from 'node:fs';const names=fs.readdirSync('/app/data/backups').filter(n=>n.startsWith('backup-'));if(names.length!==1)throw new Error('Ambiguous backup');console.log('/app/data/backups/'+names[0]);`)
+  const backup = node(
+    `import fs from 'node:fs';const names=fs.readdirSync('/app/data/backups').filter(n=>n.startsWith('backup-'));if(names.length!==1)throw new Error('Ambiguous backup');console.log('/app/data/backups/'+names[0]);`
+  )
   assert.match(backup, /^\/app\/data\/backups\/backup-[0-9_-]+$/)
-  node(`import fs from 'node:fs';import {DatabaseSync} from 'node:sqlite';const db=new DatabaseSync('/app/data/campus.sqlite');db.exec("UPDATE tasks SET title='mutated'");db.close();fs.writeFileSync('/app/data/uploads/marker.txt','mutated');`)
+  node(
+    `import fs from 'node:fs';import {DatabaseSync} from 'node:sqlite';const db=new DatabaseSync('/app/data/campus.sqlite');db.exec("UPDATE tasks SET title='mutated'");db.close();fs.writeFileSync('/app/data/uploads/marker.txt','mutated');`
+  )
   run(['npm', 'run', 'db:restore', '--', backup])
-  node(`import fs from 'node:fs';import {DatabaseSync} from 'node:sqlite';const db=new DatabaseSync('/app/data/campus.sqlite');try{if(db.prepare("SELECT COUNT(*) n FROM tasks WHERE title='mutated'").get().n)throw new Error('Database not restored');if(db.prepare('PRAGMA foreign_key_check').all().length)throw new Error('Foreign key failure');if(db.prepare('SELECT COUNT(*) n FROM sessions').get().n)throw new Error('Sessions survived restore');if(fs.readFileSync('/app/data/uploads/marker.txt','utf8')!=='original')throw new Error('Uploads not restored');}finally{db.close()}`)
+  node(
+    `import fs from 'node:fs';import {DatabaseSync} from 'node:sqlite';const db=new DatabaseSync('/app/data/campus.sqlite');try{if(db.prepare("SELECT COUNT(*) n FROM tasks WHERE title='mutated'").get().n)throw new Error('Database not restored');if(db.prepare('PRAGMA foreign_key_check').all().length)throw new Error('Foreign key failure');if(db.prepare('SELECT COUNT(*) n FROM sessions').get().n)throw new Error('Sessions survived restore');if(fs.readFileSync('/app/data/uploads/marker.txt','utf8')!=='original')throw new Error('Uploads not restored');}finally{db.close()}`
+  )
   node(`
     import assert from 'node:assert/strict';
     import {DatabaseSync} from 'node:sqlite';
@@ -156,15 +216,21 @@ try {
   const templateFixture = fs.readFileSync('docs/templates/hfut-2018.anonymous.json', 'utf8')
   node(`import fs from 'node:fs';fs.writeFileSync('/app/data/template-input.json',${JSON.stringify(templateFixture)});`)
   run(['npm', 'run', 'template:preview', '--', '/app/data/template-input.json', '/app/data/template-preview'])
-  node(`import fs from 'node:fs';const p=JSON.parse(fs.readFileSync('/app/data/template-preview/preview.json','utf8'));if(p.currentInstitutionalAcceptance!=='unverified'||!fs.statSync('/app/data/template-preview/preview.xlsx').size)throw new Error('Template preview failed');`)
+  node(
+    `import fs from 'node:fs';const p=JSON.parse(fs.readFileSync('/app/data/template-preview/preview.json','utf8'));if(p.currentInstitutionalAcceptance!=='unverified'||!fs.statSync('/app/data/template-preview/preview.xlsx').size)throw new Error('Template preview failed');`
+  )
   docker(['start', container])
   for (let attempt = 0; attempt < 40; attempt++) {
-    try { if ((await fetch(`${origin}/api/health`)).ok) break } catch {}
+    try {
+      if ((await fetch(`${origin}/api/health`)).ok) break
+    } catch {}
     if (attempt === 39) throw new Error('Restored application did not restart')
     await new Promise(resolve => setTimeout(resolve, 250))
   }
   await assertConfiguredInstallation()
-  console.log('PASS: Linux runtime without tsx, migrations, trusted institution/admin initialization, institution-wide locale, fictional workflow, HTTP/source, concurrent-instance refusal, SIGKILL recovery, backup/restore, cleanup, disabled mail, template preview and graceful restart.')
+  console.log(
+    'PASS: Linux runtime without tsx, migrations, trusted institution/admin initialization, institution-wide locale, fictional workflow, HTTP/source, concurrent-instance refusal, SIGKILL recovery, backup/restore, cleanup, disabled mail, template preview and graceful restart.'
+  )
 } finally {
   if (createdContainer) docker(['rm', '-f', container])
   const label = docker(['volume', 'inspect', '--format', '{{ index .Labels "campus.validation" }}', volume])

@@ -24,13 +24,37 @@ export async function reviewInBatches(
     } catch (cause) {
       if (isCancelled(cause) || signal.aborted || requestGeneration() !== epoch) throw cause
       // A failed response can follow committed writes. Keep those outcomes distinct from unsent rows.
-      results.push(...batch.map(item => ({ participantId: item.participantId, ok: false, code: 'BATCH_RESULT_UNKNOWN', message: msg('处理结果未确认，请刷新核对。') })))
-      results.push(...items.slice(offset + batch.length).map(item => ({ participantId: item.participantId, ok: false, code: 'BATCH_NOT_SENT', message: msg('尚未处理') })))
+      results.push(
+        ...batch.map(item => ({
+          participantId: item.participantId,
+          ok: false,
+          code: 'BATCH_RESULT_UNKNOWN',
+          message: msg('处理结果未确认，请刷新核对。')
+        }))
+      )
+      results.push(
+        ...items.slice(offset + batch.length).map(item => ({
+          participantId: item.participantId,
+          ok: false,
+          code: 'BATCH_NOT_SENT',
+          message: msg('尚未处理')
+        }))
+      )
       progress({ results: [...results] })
       throw cause
     }
     const receipts = new Map(response.results.map(result => [result.participantId, result]))
-    results.push(...batch.map(item => receipts.get(item.participantId) ?? ({ participantId: item.participantId, ok: false, code: 'BATCH_RESULT_UNKNOWN', message: msg('处理结果未确认，请刷新核对。') })))
+    results.push(
+      ...batch.map(
+        item =>
+          receipts.get(item.participantId) ?? {
+            participantId: item.participantId,
+            ok: false,
+            code: 'BATCH_RESULT_UNKNOWN',
+            message: msg('处理结果未确认，请刷新核对。')
+          }
+      )
+    )
     progress({ results: [...results] })
   }
   return { results }

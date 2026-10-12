@@ -29,27 +29,24 @@ const filterCampus = ref('')
 const filterTime = ref('all')
 const filterAudience = ref('all')
 
-const taskCategories = computed(() => [{ id: '', name: msg("全部") }, ...catalog.activeTaskCategories])
-const campusOptions = computed(() => [{ id: '', name: msg("全部校区") }, ...catalog.activeCampuses])
+const taskCategories = computed(() => [{ id: '', name: msg('全部') }, ...catalog.activeTaskCategories])
+const campusOptions = computed(() => [{ id: '', name: msg('全部校区') }, ...catalog.activeCampuses])
 const timeOptions = computed(() => [
-  { label: msg("全部时间"), value: 'all' },
-  { label: msg("今天"), value: 'today' },
-  { label: msg("明天"), value: 'tomorrow' },
-  { label: msg("未来7天"), value: 'week' }
+  { label: msg('全部时间'), value: 'all' },
+  { label: msg('今天'), value: 'today' },
+  { label: msg('明天'), value: 'tomorrow' },
+  { label: msg('未来7天'), value: 'week' }
 ])
 const audienceOptions = computed(() => [
-  { label: msg("全部范围"), value: 'all' },
-  { label: msg("全校学生"), value: 'school' },
-  { label: msg("本学院"), value: 'department' },
-  { label: msg("本年级"), value: 'grade' },
-  { label: msg("本班级"), value: 'class' }
+  { label: msg('全部范围'), value: 'all' },
+  { label: msg('全校学生'), value: 'school' },
+  { label: msg('本学院'), value: 'department' },
+  { label: msg('本年级'), value: 'grade' },
+  { label: msg('本班级'), value: 'class' }
 ])
 
 const hasAdvancedFilter = computed(
-  () =>
-    filterCampus.value !== '' ||
-    filterTime.value !== 'all' ||
-    filterAudience.value !== 'all'
+  () => filterCampus.value !== '' || filterTime.value !== 'all' || filterAudience.value !== 'all'
 )
 
 function resetAdvanced() {
@@ -60,14 +57,28 @@ function resetAdvanced() {
 
 const filters = [keyword, selectedCategory, onlyAvailable, sortType, filterCampus, filterTime, filterAudience]
 const { page, pageSize } = usePagination(filters)
-const { loading, error, ready, reload } = useLoad((signal) => taskStore.fetchTasks({
-  keyword: keyword.value.trim(), categoryId: selectedCategory.value || undefined,
-  campusId: filterCampus.value || undefined, available: onlyAvailable.value || undefined,
-  sort: sortType.value, audienceScope: filterAudience.value === 'all' ? undefined : filterAudience.value,
-  dateFrom: filterTime.value === 'all' ? undefined : dateOffset(filterTime.value === 'tomorrow' ? 1 : 0),
-  dateTo: filterTime.value === 'all' ? undefined : dateOffset(filterTime.value === 'week' ? 6 : filterTime.value === 'tomorrow' ? 1 : 0),
-  page: page.value, pageSize
-}, signal), [...filters, page])
+const { loading, error, ready, reload } = useLoad(
+  signal =>
+    taskStore.fetchTasks(
+      {
+        keyword: keyword.value.trim(),
+        categoryId: selectedCategory.value || undefined,
+        campusId: filterCampus.value || undefined,
+        available: onlyAvailable.value || undefined,
+        sort: sortType.value,
+        audienceScope: filterAudience.value === 'all' ? undefined : filterAudience.value,
+        dateFrom: filterTime.value === 'all' ? undefined : dateOffset(filterTime.value === 'tomorrow' ? 1 : 0),
+        dateTo:
+          filterTime.value === 'all'
+            ? undefined
+            : dateOffset(filterTime.value === 'week' ? 6 : filterTime.value === 'tomorrow' ? 1 : 0),
+        page: page.value,
+        pageSize
+      },
+      signal
+    ),
+  [...filters, page]
+)
 const filteredTasks = computed(() => taskStore.tasks)
 </script>
 
@@ -98,23 +109,17 @@ const filteredTasks = computed(() => taskStore.tasks)
             :class="{ 'is-active': onlyAvailable }"
             @click="onlyAvailable = !onlyAvailable"
           >
-            <van-icon :name="onlyAvailable ? 'checked' : 'circle'" />{{ msg("仅看可接取") }}</button>
-          <button
-            class="quick-filter-toggle"
-            @click="sortType = sortType === 'time' ? 'quota' : 'time'"
-          >
+            <van-icon :name="onlyAvailable ? 'checked' : 'circle'" />{{ msg('仅看可接取') }}
+          </button>
+          <button class="quick-filter-toggle" @click="sortType = sortType === 'time' ? 'quota' : 'time'">
             <van-icon name="sort" />
-            {{ sortType === 'time' ? msg("时间优先") : msg("名额优先") }}
+            {{ sortType === 'time' ? msg('时间优先') : msg('名额优先') }}
           </button>
         </div>
 
-        <button
-          class="advanced-filter-btn"
-          :class="{ 'has-filter': hasAdvancedFilter }"
-          @click="showDrawer = true"
-        >
+        <button class="advanced-filter-btn" :class="{ 'has-filter': hasAdvancedFilter }" @click="showDrawer = true">
           <van-icon name="filter-o" />
-          <span>{{ msg("高级条件") }}</span>
+          <span>{{ msg('高级条件') }}</span>
           <span v-if="hasAdvancedFilter" style="font-weight: bold; color: var(--brand)">●</span>
         </button>
       </div>
@@ -124,48 +129,61 @@ const filteredTasks = computed(() => taskStore.tasks)
     <main class="page-wrap" style="padding-top: 12px">
       <LoadState :loading="loading" :error="error" @retry="reload" />
       <template v-if="ready && !error">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; color: var(--muted); font-size: 14px">
-        <span>{{ msg("共 {p0} 个任务", { p0: taskStore.taskPage.total }) }}</span>
-        <span v-if="hasAdvancedFilter" style="color: var(--brand); cursor: pointer" @click="resetAdvanced">{{ msg("重置高级条件") }}</span>
-      </div>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: var(--muted);
+            font-size: 14px;
+          "
+        >
+          <span>{{ msg('共 {p0} 个任务', { p0: taskStore.taskPage.total }) }}</span>
+          <span v-if="hasAdvancedFilter" style="color: var(--brand); cursor: pointer" @click="resetAdvanced">{{
+            msg('重置高级条件')
+          }}</span>
+        </div>
 
-      <TaskCard
-        v-for="task in filteredTasks"
-        :key="task.id"
-        :task="task"
-        :user="user"
-        @open="id => router.push(`/tasks/${id}`)"
-      />
+        <TaskCard
+          v-for="task in filteredTasks"
+          :key="task.id"
+          :task="task"
+          :user="user"
+          @open="id => router.push(`/tasks/${id}`)"
+        />
 
-      <div v-if="filteredTasks.length === 0" class="campus-empty surface-card">
-        <van-icon name="search" />
-        <h4>{{ msg("未找到符合条件的任务") }}</h4>
-        <van-button
-          size="small"
-          type="primary"
-          style="margin-top: 14px; border-radius: 6px"
-          @click="() => { keyword = ''; selectedCategory = ''; onlyAvailable = false; resetAdvanced(); }"
-        >{{ msg("清空所有条件") }}</van-button>
-      </div>
-      <PaginationBar v-model:page="page" :page-size="pageSize" :total="taskStore.taskPage.total" :loading="loading" />
+        <div v-if="filteredTasks.length === 0" class="campus-empty surface-card">
+          <van-icon name="search" />
+          <h4>{{ msg('未找到符合条件的任务') }}</h4>
+          <van-button
+            size="small"
+            type="primary"
+            style="margin-top: 14px; border-radius: 6px"
+            @click="
+              () => {
+                keyword = ''
+                selectedCategory = ''
+                onlyAvailable = false
+                resetAdvanced()
+              }
+            "
+            >{{ msg('清空所有条件') }}</van-button
+          >
+        </div>
+        <PaginationBar v-model:page="page" :page-size="pageSize" :total="taskStore.taskPage.total" :loading="loading" />
       </template>
     </main>
 
     <!-- 高级筛选底部抽屉 -->
-    <van-popup
-      v-model:show="showDrawer"
-      position="bottom"
-      round
-      safe-area-inset-bottom
-      :style="{ maxHeight: '75%' }"
-    >
+    <van-popup v-model:show="showDrawer" position="bottom" round safe-area-inset-bottom :style="{ maxHeight: '75%' }">
       <div class="filter-drawer-content">
         <div class="drawer-header">
-          <h3>{{ msg("高级筛选条件") }}</h3>
-          <button class="text-link" @click="resetAdvanced">{{ msg("重置") }}</button>
+          <h3>{{ msg('高级筛选条件') }}</h3>
+          <button class="text-link" @click="resetAdvanced">{{ msg('重置') }}</button>
         </div>
 
-        <div class="filter-group-title">{{ msg("校区范围") }}</div>
+        <div class="filter-group-title">{{ msg('校区范围') }}</div>
         <div class="filter-options-grid">
           <button
             v-for="item in campusOptions"
@@ -178,7 +196,7 @@ const filteredTasks = computed(() => taskStore.tasks)
           </button>
         </div>
 
-        <div class="filter-group-title">{{ msg("日期范围") }}</div>
+        <div class="filter-group-title">{{ msg('日期范围') }}</div>
         <div class="filter-options-grid">
           <button
             v-for="item in timeOptions"
@@ -191,7 +209,7 @@ const filteredTasks = computed(() => taskStore.tasks)
           </button>
         </div>
 
-        <div class="filter-group-title">{{ msg("面向范围") }}</div>
+        <div class="filter-group-title">{{ msg('面向范围') }}</div>
         <div class="filter-options-grid">
           <button
             v-for="item in audienceOptions"
@@ -205,8 +223,8 @@ const filteredTasks = computed(() => taskStore.tasks)
         </div>
 
         <div class="drawer-bottom-actions">
-          <van-button block @click="showDrawer = false">{{ msg("取消") }}</van-button>
-          <van-button type="primary" block @click="showDrawer = false">{{ msg("确定") }}</van-button>
+          <van-button block @click="showDrawer = false">{{ msg('取消') }}</van-button>
+          <van-button type="primary" block @click="showDrawer = false">{{ msg('确定') }}</van-button>
         </div>
       </div>
     </van-popup>

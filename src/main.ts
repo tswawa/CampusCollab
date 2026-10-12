@@ -41,7 +41,6 @@ import { initializeLocale } from './mobile/i18n/browser'
 const app = createApp(App)
 const pinia = createPinia()
 
-
 const components: Plugin[] = [
   ActionSheet,
   Badge,
@@ -73,7 +72,7 @@ const components: Plugin[] = [
   Uploader
 ]
 
-components.forEach((component) => app.use(component))
+components.forEach(component => app.use(component))
 app.use(pinia)
 initializeLocale()
 initializeSessionLifecycle()

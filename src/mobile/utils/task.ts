@@ -16,53 +16,155 @@ export { formatDate } from './date'
 export const taskCategories = ['全部', '活动协助', '场地协助', '资料整理', '设计制作', '设备协助']
 
 // 统一7种状态：招募中、待开始、进行中、待验收、需修改、已完成、已撤销
-export const unifiedStatusMeta: Record<
-  UnifiedTaskStatus,
-  { label: string; color: string; bgColor: string }
-> = {
-  recruiting: { get label() { return msg('招募中') }, color: '#1E60D5', bgColor: '#EBF2FE' },
-  upcoming: { get label() { return msg('待开始') }, color: '#0284C7', bgColor: '#E0F2FE' },
-  in_progress: { get label() { return msg('进行中') }, color: '#D97706', bgColor: '#FEF3C7' },
-  review: { get label() { return msg('待审核') }, color: '#7C3AED', bgColor: '#EDE9FE' },
-  changes_requested: { get label() { return msg('待补正') }, color: '#E11D48', bgColor: '#FFE4E6' },
-  completed: { get label() { return msg('已完成') }, color: '#059669', bgColor: '#D1FAE5' },
-  cancelled: { get label() { return msg('已撤销') }, color: '#64748B', bgColor: '#F1F5F9' }
+export const unifiedStatusMeta: Record<UnifiedTaskStatus, { label: string; color: string; bgColor: string }> = {
+  recruiting: {
+    get label() {
+      return msg('招募中')
+    },
+    color: '#1E60D5',
+    bgColor: '#EBF2FE'
+  },
+  upcoming: {
+    get label() {
+      return msg('待开始')
+    },
+    color: '#0284C7',
+    bgColor: '#E0F2FE'
+  },
+  in_progress: {
+    get label() {
+      return msg('进行中')
+    },
+    color: '#D97706',
+    bgColor: '#FEF3C7'
+  },
+  review: {
+    get label() {
+      return msg('待审核')
+    },
+    color: '#7C3AED',
+    bgColor: '#EDE9FE'
+  },
+  changes_requested: {
+    get label() {
+      return msg('待补正')
+    },
+    color: '#E11D48',
+    bgColor: '#FFE4E6'
+  },
+  completed: {
+    get label() {
+      return msg('已完成')
+    },
+    color: '#059669',
+    bgColor: '#D1FAE5'
+  },
+  cancelled: {
+    get label() {
+      return msg('已撤销')
+    },
+    color: '#64748B',
+    bgColor: '#F1F5F9'
+  }
 }
 
-export const taskStatusMeta: Record<
-  TaskStatus,
-  { label: string; color: string; bgColor: string }
-> = {
+export const taskStatusMeta: Record<TaskStatus, { label: string; color: string; bgColor: string }> = {
   ...unifiedStatusMeta,
-  full: { get label() { return msg('已满员') }, color: '#64748B', bgColor: '#F1F5F9' }
+  full: {
+    get label() {
+      return msg('已满员')
+    },
+    color: '#64748B',
+    bgColor: '#F1F5F9'
+  }
 }
 
-export const memberStatusMeta: Record<
-  MemberStatus,
-  { label: string; color: string; bgColor: string }
-> = {
-  applied: { get label() { return msg('待确认') }, color: '#7C3AED', bgColor: '#EDE9FE' },
+export const memberStatusMeta: Record<MemberStatus, { label: string; color: string; bgColor: string }> = {
+  applied: {
+    get label() {
+      return msg('待确认')
+    },
+    color: '#7C3AED',
+    bgColor: '#EDE9FE'
+  },
   ...unifiedStatusMeta
 }
 
 // 联系方式元数据：支持微信、电话、邮箱、QQ、办公地点、站内消息、自定义
-export const contactTypeMeta: Record<
-  ContactMethodType,
-  { label: string; icon: string; action: string }
-> = {
-  wechat: { get label() { return msg('微信') }, icon: 'chat-o', get action() { return msg('复制') } },
-  phone: { get label() { return msg('电话') }, icon: 'phone-o', get action() { return msg('呼叫') } },
-  email: { get label() { return msg('邮箱') }, icon: 'envelop-o', get action() { return msg('发邮件') } },
-  qq: { label: 'QQ', icon: 'friends-o', get action() { return msg('复制') } },
-  office: { get label() { return msg('办公地点') }, icon: 'location-o', get action() { return msg('复制') } },
-  chat: { get label() { return msg('站内消息') }, icon: 'comment-o', get action() { return msg('联系') } },
-  custom: { get label() { return msg('联系方式') }, icon: 'contact-o', get action() { return msg('复制') } }
+export const contactTypeMeta: Record<ContactMethodType, { label: string; icon: string; action: string }> = {
+  wechat: {
+    get label() {
+      return msg('微信')
+    },
+    icon: 'chat-o',
+    get action() {
+      return msg('复制')
+    }
+  },
+  phone: {
+    get label() {
+      return msg('电话')
+    },
+    icon: 'phone-o',
+    get action() {
+      return msg('呼叫')
+    }
+  },
+  email: {
+    get label() {
+      return msg('邮箱')
+    },
+    icon: 'envelop-o',
+    get action() {
+      return msg('发邮件')
+    }
+  },
+  qq: {
+    label: 'QQ',
+    icon: 'friends-o',
+    get action() {
+      return msg('复制')
+    }
+  },
+  office: {
+    get label() {
+      return msg('办公地点')
+    },
+    icon: 'location-o',
+    get action() {
+      return msg('复制')
+    }
+  },
+  chat: {
+    get label() {
+      return msg('站内消息')
+    },
+    icon: 'comment-o',
+    get action() {
+      return msg('联系')
+    }
+  },
+  custom: {
+    get label() {
+      return msg('联系方式')
+    },
+    icon: 'contact-o',
+    get action() {
+      return msg('复制')
+    }
+  }
 }
 
 export const proofTypeLabels: Record<ProofType, string> = {
-  get text() { return msg('文字说明') },
-  get image() { return msg('现场图片') },
-  get onsite() { return msg('现场核验') }
+  get text() {
+    return msg('文字说明')
+  },
+  get image() {
+    return msg('现场图片')
+  },
+  get onsite() {
+    return msg('现场核验')
+  }
 }
 
 export function fullTaskTime(task: CampusTask): string {
@@ -89,7 +191,7 @@ export function audienceLabel(task: CampusTask): string {
 }
 
 export function memberOf(task: CampusTask, userId: string) {
-  return task.members.find((member) => member.userId === userId)
+  return task.members.find(member => member.userId === userId)
 }
 
 export function getOccupiedCount(task: CampusTask): number {

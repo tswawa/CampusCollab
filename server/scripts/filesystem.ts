@@ -7,12 +7,14 @@ export function canonicalPath(filename: string): string {
   let existing = path.resolve(filename)
   const missing: string[] = []
   for (;;) {
-    try { fs.lstatSync(existing) }
-    catch (error) {
+    try {
+      fs.lstatSync(existing)
+    } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
       const parent = path.dirname(existing)
       if (parent === existing) throw error
-      missing.push(path.basename(existing)); existing = parent
+      missing.push(path.basename(existing))
+      existing = parent
       continue
     }
     // An existing but dangling/inaccessible alias must fail, not be treated as
@@ -27,12 +29,14 @@ export function containsPath(directory: string, target: string): boolean {
 }
 
 export function assertSeparatePaths(first: string, second: string) {
-  const left = canonicalPath(first); const right = canonicalPath(second)
+  const left = canonicalPath(first)
+  const right = canonicalPath(second)
   if (containsPath(left, right) || containsPath(right, left)) {
     throw new Error('备份与数据路径不能相同或相互包含（包括符号链接与路径别名）')
   }
   if (fs.existsSync(left) && fs.existsSync(right)) {
-    const a = fs.statSync(left); const b = fs.statSync(right)
+    const a = fs.statSync(left)
+    const b = fs.statSync(right)
     if (a.dev === b.dev && a.ino === b.ino) throw new Error('备份与数据路径不能指向同一文件')
   }
 }

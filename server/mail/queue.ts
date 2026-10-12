@@ -6,7 +6,15 @@ export function enqueueNoticeEmail(db: AppDatabase, noticeId: string, userId: st
   if (!user?.email || user.approval !== 'approved') return undefined
   const id = createId('delivery')
   const timestamp = nowIso()
-  db.run(`INSERT OR IGNORE INTO mail_deliveries(id, notice_id, user_id, recipient_email, status, created_at, updated_at)
-    VALUES (?, ?, ?, ?, 'pending', ?, ?)`, id, noticeId, userId, String(user.email), timestamp, timestamp)
+  db.run(
+    `INSERT OR IGNORE INTO mail_deliveries(id, notice_id, user_id, recipient_email, status, created_at, updated_at)
+    VALUES (?, ?, ?, ?, 'pending', ?, ?)`,
+    id,
+    noticeId,
+    userId,
+    String(user.email),
+    timestamp,
+    timestamp
+  )
   return String(db.get('SELECT id FROM mail_deliveries WHERE notice_id=?', noticeId)!.id)
 }

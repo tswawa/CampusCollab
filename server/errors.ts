@@ -11,6 +11,12 @@ export class AppError extends Error {
   }
 }
 
-export function assertCondition(condition: unknown, statusCode: number, code: string, message: string, params: MessageParams = {}): asserts condition {
+export function assertCondition(
+  condition: unknown,
+  statusCode: number,
+  code: string,
+  message: string,
+  params: MessageParams = {}
+): asserts condition {
   if (!condition) throw new AppError(statusCode, code, message, params)
 }

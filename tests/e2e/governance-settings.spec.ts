@@ -8,29 +8,70 @@ async function signIn(page: Page) {
   await expect(page).toHaveURL('/admin/home')
 }
 const item = {
-  taskId: 'task_cleanup_fixture', title: '校园花园维护', taskVersion: 1,
-  lastSnapshotAt: '2020-01-01T00:00:00Z', eligibleAt: '2021-01-01T00:00:00Z', eligible: true,
+  taskId: 'task_cleanup_fixture',
+  title: '校园花园维护',
+  taskVersion: 1,
+  lastSnapshotAt: '2020-01-01T00:00:00Z',
+  eligibleAt: '2021-01-01T00:00:00Z',
+  eligible: true,
   counts: { participants: 8, revisions: 7, snapshots: 1, files: 2, fileBytes: 1024, notices: 3 },
-  blockers: [] as Array<{ code: string; count: number }>, previewHash: 'a'.repeat(64)
+  blockers: [] as Array<{ code: string; count: number }>,
+  previewHash: 'a'.repeat(64)
 }
-const overview = (items: typeof item[], pendingFileDeletions = 0) => ({
-  retentionDays: 365, items, pendingFileDeletions, page: 1, pageSize: 100, total: items.length,
-  automaticDeletion: false, backupDeletionAutomatic: false
+const overview = (items: (typeof item)[], pendingFileDeletions = 0) => ({
+  retentionDays: 365,
+  items,
+  pendingFileDeletions,
+  page: 1,
+  pageSize: 100,
+  total: items.length,
+  automaticDeletion: false,
+  backupDeletionAutomatic: false
 })
 const success = (data: unknown) => ({ ok: true, data, message: '已保存' })
 
 test('设置按分区加载，未到期无删除入口，邮件未知结果重发需确认', async ({ page }, testInfo) => {
-  let mailReads = 0; let retries = 0; let failedMail = false
-  await page.route(/\/api\/admin\/retention(?:\?.*)?$/, route => route.fulfill({ json: success(overview([
-    { ...item, eligible: false, eligibleAt: '2099-01-01T00:00:00Z', blockers: [{ code: 'RETENTION_NOT_DUE', count: 1 }] }
-  ])) }))
+  let mailReads = 0
+  let retries = 0
+  let failedMail = false
+  await page.route(/\/api\/admin\/retention(?:\?.*)?$/, route =>
+    route.fulfill({
+      json: success(
+        overview([
+          {
+            ...item,
+            eligible: false,
+            eligibleAt: '2099-01-01T00:00:00Z',
+            blockers: [{ code: 'RETENTION_NOT_DUE', count: 1 }]
+          }
+        ])
+      )
+    })
+  )
   await page.route('**/api/admin/mail-deliveries', route => {
     mailReads++
-    return route.fulfill({ json: success({ enabled: failedMail, counts: { pending: 0, sending: 0, accepted: 0, failed: failedMail ? 1 : 0 },
-      items: failedMail ? [{ id: 'mail_fixture', recipientName: '陈老师', status: 'failed', attempts: 1, errorCode: 'MAIL_OUTCOME_UNKNOWN', updatedAt: '2026-10-08T01:00:00Z' }] : [] }) })
+    return route.fulfill({
+      json: success({
+        enabled: failedMail,
+        counts: { pending: 0, sending: 0, accepted: 0, failed: failedMail ? 1 : 0 },
+        items: failedMail
+          ? [
+              {
+                id: 'mail_fixture',
+                recipientName: '陈老师',
+                status: 'failed',
+                attempts: 1,
+                errorCode: 'MAIL_OUTCOME_UNKNOWN',
+                updatedAt: '2026-10-08T01:00:00Z'
+              }
+            ]
+          : []
+      })
+    })
   })
   await page.route('**/api/admin/mail-deliveries/mail_fixture/retry', route => {
-    retries++; expect(route.request().postDataJSON()).toEqual({})
+    retries++
+    expect(route.request().postDataJSON()).toEqual({})
     return route.fulfill({ json: success(null) })
   })
   await signIn(page)
@@ -54,7 +95,10 @@ test('设置按分区加载，未到期无删除入口，邮件未知结果重�
   await main.getByRole('link', { name: '修改', exact: true }).click()
   await expect(page).toHaveURL('/admin/settings#retention-settings')
   await expect(page.getByLabel('结项后保存天数', { exact: true })).toBeInViewport()
-  await page.getByRole('navigation', { name: '系统设置', exact: true }).getByRole('link', { name: '通知设置', exact: true }).click()
+  await page
+    .getByRole('navigation', { name: '系统设置', exact: true })
+    .getByRole('link', { name: '通知设置', exact: true })
+    .click()
   await expect(main.getByText('未启用', { exact: true })).toBeVisible()
   await expect(main.getByText('使用中', { exact: true })).toBeVisible()
   await expect(main.getByText('等待发送', { exact: true })).toHaveCount(0)
@@ -74,21 +118,41 @@ test('设置按分区加载，未到期无删除入口，邮件未知结果重�
 })
 
 test('清理重新读取版本，冲突后要求刷新，任务移除后仍可重试附件', async ({ page }) => {
-  let purged = false; let pending = 0; let previews = 0; let purges = 0; let fileRetries = 0
-  await page.route(/\/api\/admin\/retention(?:\?.*)?$/, route => route.fulfill({ json: success(overview(purged ? [] : [item], pending)) }))
+  let purged = false
+  let pending = 0
+  let previews = 0
+  let purges = 0
+  let fileRetries = 0
+  await page.route(/\/api\/admin\/retention(?:\?.*)?$/, route =>
+    route.fulfill({ json: success(overview(purged ? [] : [item], pending)) })
+  )
   await page.route('**/api/admin/retention/tasks/task_cleanup_fixture/preview', route => {
     previews++
-    return route.fulfill({ json: success({ ...item, taskVersion: previews + 1, previewHash: (previews === 1 ? 'b' : 'c').repeat(64) }) })
+    return route.fulfill({
+      json: success({ ...item, taskVersion: previews + 1, previewHash: (previews === 1 ? 'b' : 'c').repeat(64) })
+    })
   })
   await page.route('**/api/admin/retention/tasks/task_cleanup_fixture/purge', route => {
     purges++
-    expect(route.request().postDataJSON()).toEqual({ version: purges + 1, previewHash: (purges === 1 ? 'b' : 'c').repeat(64), confirmation: item.taskId })
-    if (purges === 1) return route.fulfill({ status: 409, json: { ok: false, code: 'RETENTION_PREVIEW_STALE', message: '请重新预览清理范围' } })
-    purged = true; pending = 1
-    return route.fulfill({ json: success({ purged: true, files: { processed: 2, deleted: 1, failed: 1, pending: 1 } }) })
+    expect(route.request().postDataJSON()).toEqual({
+      version: purges + 1,
+      previewHash: (purges === 1 ? 'b' : 'c').repeat(64),
+      confirmation: item.taskId
+    })
+    if (purges === 1)
+      return route.fulfill({
+        status: 409,
+        json: { ok: false, code: 'RETENTION_PREVIEW_STALE', message: '请重新预览清理范围' }
+      })
+    purged = true
+    pending = 1
+    return route.fulfill({
+      json: success({ purged: true, files: { processed: 2, deleted: 1, failed: 1, pending: 1 } })
+    })
   })
   await page.route('**/api/admin/retention/files/retry', route => {
-    fileRetries++; pending = 0
+    fileRetries++
+    pending = 0
     return route.fulfill({ json: success({ processed: 1, deleted: 1, failed: 0, pending: 0 }) })
   })
   await signIn(page)

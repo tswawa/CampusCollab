@@ -20,7 +20,8 @@ assertSeparatePaths(sourceDatabase, config.databasePath)
 if (containsPath(canonicalPath(source), canonicalPath(config.backupDir))) {
   throw new Error('备份源、目标数据库、上传目录及安全副本目录不能相互覆盖')
 }
-if (!fs.existsSync(manifestPath) || !fs.existsSync(sourceDatabase)) throw new Error('备份目录缺少 manifest.json 或 campus.sqlite')
+if (!fs.existsSync(manifestPath) || !fs.existsSync(sourceDatabase))
+  throw new Error('备份目录缺少 manifest.json 或 campus.sqlite')
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as { format?: string }
 if (manifest.format !== 'campus-backup-v1') throw new Error('不支持的备份格式')
 const release = acquireDatabaseLease(config.databasePath)
@@ -40,25 +41,45 @@ try {
         throw new Error(`备份数据库缺少表：${table}`)
       }
     }
-    const knownMigrations = fs.readdirSync(path.join(projectRoot, 'server/db/migrations')).filter((name) => /^\d+_.+\.sql$/.test(name)).sort()
-    const appliedMigrations = verification.prepare('SELECT version, name FROM schema_migrations ORDER BY version').all() as Array<{ version: number; name: string }>
-    if (!appliedMigrations.length || appliedMigrations.some((migration, index) =>
-      knownMigrations[index] !== migration.name || Number(migration.name.split('_', 1)[0]) !== migration.version)) {
+    const knownMigrations = fs
+      .readdirSync(path.join(projectRoot, 'server/db/migrations'))
+      .filter(name => /^\d+_.+\.sql$/.test(name))
+      .sort()
+    const appliedMigrations = verification
+      .prepare('SELECT version, name FROM schema_migrations ORDER BY version')
+      .all() as Array<{ version: number; name: string }>
+    if (
+      !appliedMigrations.length ||
+      appliedMigrations.some(
+        (migration, index) =>
+          knownMigrations[index] !== migration.name || Number(migration.name.split('_', 1)[0]) !== migration.version
+      )
+    ) {
       throw new Error('备份数据库版本与当前程序不兼容')
     }
     const storedFiles = verification.prepare('SELECT stored_name FROM files').all() as { stored_name: string }[]
     for (const file of storedFiles) {
       const filename = path.resolve(sourceUploads, file.stored_name)
-      if (!containsPath(canonicalPath(sourceUploads), canonicalPath(filename)) || !fs.existsSync(filename) || !fs.lstatSync(filename).isFile()) {
+      if (
+        !containsPath(canonicalPath(sourceUploads), canonicalPath(filename)) ||
+        !fs.existsSync(filename) ||
+        !fs.lstatSync(filename).isFile()
+      ) {
         throw new Error('备份缺少附件或含非法附件路径，未覆盖现有数据')
       }
     }
-  } finally { verification.close() }
+  } finally {
+    verification.close()
+  }
 
   // 先完整准备恢复副本，任何预检/复制失败都不会更改目标数据。
   fs.copyFileSync(sourceDatabase, stagedDatabase)
   const prepared = new DatabaseSync(stagedDatabase)
-  try { prepared.exec('DELETE FROM sessions; PRAGMA wal_checkpoint(TRUNCATE);') } finally { prepared.close() }
+  try {
+    prepared.exec('DELETE FROM sessions; PRAGMA wal_checkpoint(TRUNCATE);')
+  } finally {
+    prepared.close()
+  }
   if (fs.existsSync(sourceUploads)) copyDirectory(sourceUploads, stagedUploads)
   else fs.mkdirSync(stagedUploads, { recursive: true })
 
@@ -71,12 +92,24 @@ try {
     try {
       current.exec('PRAGMA busy_timeout = 1000; PRAGMA wal_checkpoint(TRUNCATE);')
       await backup(current, path.join(safetyCopy, 'campus.sqlite'))
-    } finally { current.close() }
+    } finally {
+      current.close()
+    }
   }
   if (hadUploads) copyDirectory(config.uploadDir, path.join(safetyCopy, 'uploads'))
-  fs.writeFileSync(path.join(safetyCopy, 'manifest.json'), JSON.stringify({
-    format: 'campus-backup-v1', createdAt: new Date().toISOString(), database: 'campus.sqlite', uploads: 'uploads'
-  }, null, 2))
+  fs.writeFileSync(
+    path.join(safetyCopy, 'manifest.json'),
+    JSON.stringify(
+      {
+        format: 'campus-backup-v1',
+        createdAt: new Date().toISOString(),
+        database: 'campus.sqlite',
+        uploads: 'uploads'
+      },
+      null,
+      2
+    )
+  )
 
   try {
     fs.rmSync(config.uploadDir, { recursive: true, force: true })

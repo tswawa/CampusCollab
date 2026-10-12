@@ -10,9 +10,14 @@ export function acquireDatabaseLease(databasePath: string): () => void {
   const absolute = path.resolve(databasePath)
   fs.mkdirSync(path.dirname(absolute), { recursive: true })
   let databaseExists = false
-  try { fs.lstatSync(absolute); databaseExists = true }
-  catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
-  const canonical = databaseExists ? fs.realpathSync(absolute)
+  try {
+    fs.lstatSync(absolute)
+    databaseExists = true
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+  }
+  const canonical = databaseExists
+    ? fs.realpathSync(absolute)
     : path.join(fs.realpathSync(path.dirname(absolute)), path.basename(absolute))
   if (fs.existsSync(canonical) && fs.statSync(canonical).nlink > 1) {
     throw new Error('数据库路径不能使用硬链接；请使用同一个规范数据库路径')
@@ -20,16 +25,22 @@ export function acquireDatabaseLease(databasePath: string): () => void {
   const directory = `${canonical}.lock`
   // mkdir competes atomically with the old implementation's open(..., 'wx').
   // A legacy JSON file is never declared stale from this namespace's PID view.
-  try { fs.mkdirSync(directory, { mode: 0o700 }) }
-  catch (error) { if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error }
+  try {
+    fs.mkdirSync(directory, { mode: 0o700 })
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error
+  }
   const entry = fs.lstatSync(directory)
   if (!entry.isDirectory() || entry.isSymbolicLink()) {
-    throw new Error('检测到旧版或无效的 .lock 文件；请停止所有使用此数据库的服务和运维命令，确认后归档旧锁文件再升级，不能按 PID 自动删除')
+    throw new Error(
+      '检测到旧版或无效的 .lock 文件；请停止所有使用此数据库的服务和运维命令，确认后归档旧锁文件再升级，不能按 PID 自动删除'
+    )
   }
   const filename = path.join(directory, 'lease.sqlite')
   try {
     const file = fs.lstatSync(filename)
-    if (!file.isFile() || file.isSymbolicLink() || file.nlink > 1) throw new Error('数据库互斥锁路径无效，请检查 .lock/lease.sqlite')
+    if (!file.isFile() || file.isSymbolicLink() || file.nlink > 1)
+      throw new Error('数据库互斥锁路径无效，请检查 .lock/lease.sqlite')
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
   }

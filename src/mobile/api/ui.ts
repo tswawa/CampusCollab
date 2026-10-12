@@ -27,7 +27,9 @@ export function useLoad(loader: (signal: AbortSignal) => Promise<unknown>, sourc
       if (id === sequence && !disposed) loading.value = false
     }
   }
-  const refresh = () => { void reload() }
+  const refresh = () => {
+    void reload()
+  }
   onMounted(refresh)
   if (sources.length) watch(sources, refresh)
   window.addEventListener('campus:refresh', refresh)
@@ -47,7 +49,10 @@ export function useMutation(onError?: (cause: unknown) => void) {
   let disposed = false
   let controller: AbortController | undefined
   const cancel = () => controller?.abort()
-  onBeforeUnmount(() => { disposed = true; cancel() })
+  onBeforeUnmount(() => {
+    disposed = true
+    cancel()
+  })
   async function run<T>(action: (signal: AbortSignal) => Promise<T>, success?: (result: T) => void, message?: string) {
     if (busy.value || disposed) return false
     const epoch = requestGeneration()
@@ -69,7 +74,10 @@ export function useMutation(onError?: (cause: unknown) => void) {
         showToast(error.value)
       }
       return false
-    } finally { busy.value = false; controller = undefined }
+    } finally {
+      busy.value = false
+      controller = undefined
+    }
   }
   return { busy, error, run, cancel }
 }
@@ -77,6 +85,13 @@ export function useMutation(onError?: (cause: unknown) => void) {
 export function usePagination(filters: WatchSource[] = []) {
   const page = ref(1)
   const pageSize = 20
-  if (filters.length) watch(filters, () => { page.value = 1 }, { flush: 'sync' })
+  if (filters.length)
+    watch(
+      filters,
+      () => {
+        page.value = 1
+      },
+      { flush: 'sync' }
+    )
   return { page, pageSize }
 }

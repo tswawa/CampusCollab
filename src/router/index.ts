@@ -50,17 +50,20 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['admin'] },
       children: [
         {
-          path: 'governance', name: 'admin-governance',
+          path: 'governance',
+          name: 'admin-governance',
           redirect: '/admin/settings/data'
         },
         {
-          path: 'settings/notifications', name: 'admin-notification-settings',
+          path: 'settings/notifications',
+          name: 'admin-notification-settings',
           component: () => import('@/mobile/pages/admin/AdminGovernancePage.vue'),
           props: { section: 'notifications' },
           meta: { requiresAuth: true, roles: ['admin'], title: '通知设置' }
         },
         {
-          path: 'settings/data', name: 'admin-data-settings',
+          path: 'settings/data',
+          name: 'admin-data-settings',
           component: () => import('@/mobile/pages/admin/AdminGovernancePage.vue'),
           props: { section: 'data' },
           meta: { requiresAuth: true, roles: ['admin'], title: '数据管理' }
@@ -199,7 +202,7 @@ const router = createRouter({
       redirect: '/'
     }
   ],
-  scrollBehavior: to => to.hash ? { el: to.hash, top: 88 } : { top: 0 }
+  scrollBehavior: to => (to.hash ? { el: to.hash, top: 88 } : { top: 0 })
 })
 
 function roleHome(role?: UserRole) {
@@ -207,13 +210,15 @@ function roleHome(role?: UserRole) {
   return role === 'teacher' ? '/teacher/home' : '/student/home'
 }
 
-router.beforeEach(async (to) => {
-  if (!await bootstrap()) return true
+router.beforeEach(async to => {
+  if (!(await bootstrap())) return true
   const auth = useAuthStore()
   const installation = useSystemStore().installation
   if (installation?.status === 'required' && to.name !== 'setup') return '/setup'
-  if (installation?.status === 'blocked' && to.name !== 'setup' && to.name !== 'login' && !auth.isLoggedIn) return '/setup'
-  if (installation?.status === 'configured' && to.name === 'setup') return auth.isLoggedIn ? roleHome(auth.role) : '/login'
+  if (installation?.status === 'blocked' && to.name !== 'setup' && to.name !== 'login' && !auth.isLoggedIn)
+    return '/setup'
+  if (installation?.status === 'configured' && to.name === 'setup')
+    return auth.isLoggedIn ? roleHome(auth.role) : '/login'
   if (to.meta.public) {
     if (to.name === 'welcome' && auth.isLoggedIn) return roleHome(auth.role)
     return true
@@ -221,7 +226,11 @@ router.beforeEach(async (to) => {
   if (to.meta.requiresAuth && !auth.isLoggedIn) {
     return { path: '/login', query: { redirect: to.fullPath } }
   }
-  if (auth.role === 'admin' && !to.path.startsWith('/admin') && !['notifications', 'profile', 'task-workflow'].includes(String(to.name))) {
+  if (
+    auth.role === 'admin' &&
+    !to.path.startsWith('/admin') &&
+    !['notifications', 'profile', 'task-workflow'].includes(String(to.name))
+  ) {
     if (to.name === 'task-detail') return { path: '/admin/tasks', query: { task: String(to.params.id) } }
     return '/admin/home'
   }

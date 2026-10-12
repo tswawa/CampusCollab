@@ -10,7 +10,14 @@ import { canReadWorkflowFile, getTaskWorkflow } from '../modules/workflow.servic
 
 test('001 database migrates existing participants and confirmed evidence without losing identities or files', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'campus-workflow-migrate-'))
-  const db = new AppDatabase(loadConfig({ nodeEnv: 'test', databasePath: path.join(root, 'legacy.sqlite'), uploadDir: path.join(root, 'uploads'), backupDir: path.join(root, 'backups') }))
+  const db = new AppDatabase(
+    loadConfig({
+      nodeEnv: 'test',
+      databasePath: path.join(root, 'legacy.sqlite'),
+      uploadDir: path.join(root, 'uploads'),
+      backupDir: path.join(root, 'backups')
+    })
+  )
   try {
     db.raw.exec(fs.readFileSync(path.resolve('server/db/migrations/001_initial.sql'), 'utf8'))
     db.raw.exec(`
@@ -37,12 +44,19 @@ test('001 database migrates existing participants and confirmed evidence without
     const workflow = getTaskWorkflow(db, teacher, 'task')
     assert.equal(workflow.participants.length, 1)
     const person = workflow.participants[0]
-    assert.equal(person.userId, 'student'); assert.equal(person.version, 7); assert.equal(person.status, 'completed')
-    assert.equal(person.confirmedRevisionId, 'legacy:proof'); assert.equal(person.revisions[0].revision, 3)
-    assert.equal(person.revisions[0].description, 'Legacy confirmed description'); assert.deepEqual(person.revisions[0].fileIds, ['image'])
+    assert.equal(person.userId, 'student')
+    assert.equal(person.version, 7)
+    assert.equal(person.status, 'completed')
+    assert.equal(person.confirmedRevisionId, 'legacy:proof')
+    assert.equal(person.revisions[0].revision, 3)
+    assert.equal(person.revisions[0].description, 'Legacy confirmed description')
+    assert.deepEqual(person.revisions[0].fileIds, ['image'])
     assert.equal(person.confirmedMinutes, null, 'migration must not turn planned text into confirmed minutes')
     assert.equal(canReadWorkflowFile(db, teacher, 'image'), true)
     db.migrate()
     assert.equal(db.get('SELECT COUNT(*) n FROM workflow_revisions')?.n, 1)
-  } finally { db.close(); fs.rmSync(root, { recursive: true, force: true }) }
+  } finally {
+    db.close()
+    fs.rmSync(root, { recursive: true, force: true })
+  }
 })

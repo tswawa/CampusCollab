@@ -14,7 +14,8 @@ export const englishErrors: Record<string, string> = {
   NAME_INVALID: 'Enter a name of 1–100 characters.',
   EMAIL_INVALID: 'Enter a valid email address.',
   EXTERNAL_ID_INVALID: 'The external identifier must be text of up to 100 characters.',
-  EXTERNAL_ID_EXISTS: 'This external identifier is already linked to an account. Ask an administrator to resolve the conflict.',
+  EXTERNAL_ID_EXISTS:
+    'This external identifier is already linked to an account. Ask an administrator to resolve the conflict.',
   LOCALE_INVALID: 'This language is not supported.',
   REGISTRATION_CLOSED: 'Self-registration is currently closed. Contact your administrator.',
   EXTERNAL_PARTICIPANTS_DISABLED: 'This institution does not currently accept external participants.',
@@ -27,12 +28,14 @@ export const englishErrors: Record<string, string> = {
   CLASS_INVALID: 'Select a valid group belonging to the selected organization unit and academic year.',
   ACCOUNT_EXISTS: 'This account already exists.',
   PASSWORD_REQUIRED: 'Set an initial password.',
-  PASSWORD_INVALID: 'Use a password of 8–128 characters with at least two of these groups: letters, numbers, and symbols.',
+  PASSWORD_INVALID:
+    'Use a password of 8–128 characters with at least two of these groups: letters, numbers, and symbols.',
   FORBIDDEN: 'You do not have permission to perform this action.',
   SELF_PROTECTED: 'You cannot delete or disable your current account or change its role.',
   USER_HAS_TASKS: 'This account has task records. Disable it instead of deleting it or changing its role.',
   USER_HAS_WORKFLOW_HISTORY: 'Historical task records reference this account. Disable it instead of deleting it.',
-  USER_OWNS_CURRENT_LOGO: 'The institution still uses a logo uploaded by this account. Replace the logo first or disable the account.',
+  USER_OWNS_CURRENT_LOGO:
+    'The institution still uses a logo uploaded by this account. Replace the logo first or disable the account.',
   LAST_ADMIN: 'At least one active administrator must remain.',
   USER_NOT_FOUND: 'Account not found.',
   STALE_VERSION: 'This record has changed. Refresh and try again.',
@@ -78,21 +81,24 @@ export const englishErrors: Record<string, string> = {
   MAIL_DISABLED: 'Email delivery is not enabled.',
   MAIL_DELIVERY_NOT_FOUND: 'Email delivery record not found.',
   MAIL_RETRY_FORBIDDEN: 'Only failed email attempts can be retried. SMTP-accepted messages cannot be sent again.',
-  RETENTION_FILE_PATH_INVALID: 'An evidence file path is outside the authorized upload directory or includes a symbolic link.',
+  RETENTION_FILE_PATH_INVALID:
+    'An evidence file path is outside the authorized upload directory or includes a symbolic link.',
   RETENTION_FILE_REUSED: 'The file identifier or stored filename is in use again and cannot be deleted.',
   RETENTION_REFERENCE_CYCLE: 'Evidence or snapshots contain a reference cycle and cannot be purged.',
   RETENTION_CONFIRMATION_REQUIRED: 'Enter the complete task ID to confirm permanent deletion.',
   RETENTION_PREVIEW_STALE: 'The task data or retention policy has changed. Preview the purge again.',
   RETENTION_BLOCKED: 'The task is not yet due for deletion or still has references that block deletion.',
   RETENTION_CONTEXT_BUSY: 'Another controlled deletion transaction has not finished.',
-  RETENTION_FILE_DELETE_FAILED: 'The database records were purged, but a stored file could not be deleted. Retry file cleanup.',
+  RETENTION_FILE_DELETE_FAILED:
+    'The database records were purged, but a stored file could not be deleted. Retry file cleanup.',
   RETENTION_TASK_OPEN: 'The task has not been closed out.',
   RETENTION_SNAPSHOT_MISSING: 'The task has no closeout snapshot.',
   RETENTION_NOT_DUE: 'The latest closeout snapshot is still within the retention period.',
   RETENTION_CROSS_TASK_REFERENCE: 'Another task references this task’s evidence or snapshot.',
   RETENTION_SHARED_FILE: 'An evidence file is shared with another task or purpose.',
   RETENTION_MAIL_IN_FLIGHT: 'An email for this task is currently being sent.',
-  RETENTION_LEGACY_NOTICES: 'Historical notifications lack task references and require administrator review before deletion.',
+  RETENTION_LEGACY_NOTICES:
+    'Historical notifications lack task references and require administrator review before deletion.',
   DEMO_PRODUCTION_FORBIDDEN: 'Fictional demo data cannot be created in production.',
   DEMO_TOTALS_INVALID: 'The fictional demonstration totals failed validation.',
   EXPORT_TOO_LARGE: 'The completion package exceeds the supported participant or file-size limit.',
@@ -108,7 +114,8 @@ export const englishErrors: Record<string, string> = {
   TASK_LIST_INVALID: 'The task list has too many items or an item is too long.',
   TASK_DATE_INVALID: 'Enter a valid task date.',
   TASK_DATE_FILTER_INVALID: 'Enter a valid date filter.',
-  TASK_TIME_INVALID: 'The local date or time is invalid, nonexistent, or ambiguous in the institution time zone. Choose an unambiguous time.',
+  TASK_TIME_INVALID:
+    'The local date or time is invalid, nonexistent, or ambiguous in the institution time zone. Choose an unambiguous time.',
   TASK_TIME_ORDER_INVALID: 'The task must end after it starts.',
   TASK_DEADLINE_INVALID: 'The signup deadline cannot be after the task starts.',
   TASK_START_PAST: 'The task must start in the future.',
@@ -158,7 +165,8 @@ export const englishErrors: Record<string, string> = {
   WORKFLOW_PARTICIPANT_NOT_FOUND: 'Participation record not found.',
   WORKFLOW_TEMPLATE_UNAVAILABLE: 'The generic template is unavailable.',
   WORKFLOW_TEMPLATE_INVALID: 'This template or version does not exist.',
-  WORKFLOW_REQUIREMENTS_FROZEN: 'Evidence has already been submitted. The template and evidence requirements are fixed.',
+  WORKFLOW_REQUIREMENTS_FROZEN:
+    'Evidence has already been submitted. The template and evidence requirements are fixed.',
   WORKFLOW_DEADLINE_INVALID: 'Enter a valid evidence submission deadline.',
   WORKFLOW_IMPORT_SOURCE_INVALID: 'Enter the roster source.',
   WORKFLOW_IMPORT_SIZE_INVALID: 'The roster must contain 1–10000 rows.',
@@ -180,8 +188,10 @@ export const englishErrors: Record<string, string> = {
   WORKFLOW_PERSONAL_REQUIRED: 'This activity requires individual evidence before confirmation.',
   WORKFLOW_MINUTES_UNCONFIRMED: 'Only confirmed participation records can have their confirmed minutes corrected.',
   WORKFLOW_ROSTER_EMPTY: 'Add participants before closing out this task.',
-  WORKFLOW_UNRESOLVED_PARTICIPANTS: 'Resolve every pending, incomplete, and withdrawn participation record before closeout.',
-  WORKFLOW_CONFIRMATION_INCOMPLETE: 'Every confirmed participant needs an evidence version and confirmed actual minutes.',
+  WORKFLOW_UNRESOLVED_PARTICIPANTS:
+    'Resolve every pending, incomplete, and withdrawn participation record before closeout.',
+  WORKFLOW_CONFIRMATION_INCOMPLETE:
+    'Every confirmed participant needs an evidence version and confirmed actual minutes.',
   WORKFLOW_NOT_CLOSED: 'This task has not been closed out.',
   WORKFLOW_SNAPSHOT_NOT_FOUND: 'Closeout snapshot not found.',
   WORKFLOW_OWNER_INVALID: 'Select an active coordinator as the new owner.',
@@ -231,16 +241,23 @@ const successEntries: Array<[string, string, string]> = [
 ]
 
 export function successCode(message: string): string {
-  return successEntries.find((entry) => entry[1] === message)?.[0] ?? 'SUCCESS'
+  return successEntries.find(entry => entry[1] === message)?.[0] ?? 'SUCCESS'
 }
 
 export function formatMessage(template: string, params: MessageParams): string {
   return template.replace(/\{([A-Za-z][A-Za-z0-9_]*)\}/g, (match, key: string) =>
-    Object.prototype.hasOwnProperty.call(params, key) ? String(params[key] ?? '') : match)
+    Object.prototype.hasOwnProperty.call(params, key) ? String(params[key] ?? '') : match
+  )
 }
 
-export function translateApiMessage(code: string, fallback: string, locale: Locale, params: MessageParams = {}, ok = false): string {
-  const entry = successEntries.find((item) => item[0] === code)
+export function translateApiMessage(
+  code: string,
+  fallback: string,
+  locale: Locale,
+  params: MessageParams = {},
+  ok = false
+): string {
+  const entry = successEntries.find(item => item[0] === code)
   if (ok) return entry ? entry[locale === 'en' ? 2 : 1] : locale === 'en' ? 'Success.' : fallback
   if (locale === 'en') return formatMessage(englishErrors[code] ?? 'This request could not be completed.', params)
   return formatMessage(fallback, params)

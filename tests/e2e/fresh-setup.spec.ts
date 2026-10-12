@@ -17,7 +17,9 @@ test(`${locale}: 首次安装建立机构与管理员，成功后关闭安装入
   expect((await state.json()).data).toMatchObject({ status: 'required', setupAvailable: true })
   await page.locator(`input[name="edition"][value="${locale}"]`).check()
   await expect(page.locator('html')).toHaveAttribute('lang', locale)
-  await expect(page.getByRole('heading', { name: english ? 'Choose your system edition' : '选择整套系统的语言版本', exact: true })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: english ? 'Choose your system edition' : '选择整套系统的语言版本', exact: true })
+  ).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath(`setup-${locale}-edition.png`), fullPage: true })
   const next = () => page.getByRole('button', { name: english ? 'Continue' : '下一步', exact: true })
   await next().click()
@@ -34,9 +36,13 @@ test(`${locale}: 首次安装建立机构与管理员，成功后关闭安装入
   const create = page.getByRole('button', { name: english ? 'Create workspace' : '创建工作空间', exact: true })
   await create.scrollIntoViewIfNeeded()
   await expect(create).toBeInViewport({ ratio: 1 })
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(
+    true
+  )
   const [installed] = await Promise.all([
-    page.waitForResponse(response => new URL(response.url()).pathname === '/api/installation' && response.request().method() === 'POST'),
+    page.waitForResponse(
+      response => new URL(response.url()).pathname === '/api/installation' && response.request().method() === 'POST'
+    ),
     create.click()
   ])
   expect(installed.status(), await installed.text()).toBe(201)
@@ -64,5 +70,7 @@ test(`${locale}: 首次安装建立机构与管理员，成功后关闭安装入
     await expect(anonymous).toHaveURL('/login')
     await expect(anonymous.locator('html')).toHaveAttribute('lang', locale)
     await expect(anonymous.locator('#setup-token, input[name="edition"], .language-bar')).toHaveCount(0)
-  } finally { await visitor.close() }
+  } finally {
+    await visitor.close()
+  }
 })

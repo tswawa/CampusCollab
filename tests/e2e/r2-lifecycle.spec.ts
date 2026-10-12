@@ -30,7 +30,8 @@ test('evidence previews remain usable and close with their page or revoked sessi
     const http = await request.newContext({ baseURL })
     const anonymous = (await (await http.get('/api/auth/session')).json()).data as SessionData
     const response = await http.post('/api/auth/login', {
-      headers: { Origin: baseURL!, 'X-CSRF-Token': anonymous.csrfToken }, data: { account, password }
+      headers: { Origin: baseURL!, 'X-CSRF-Token': anonymous.csrfToken },
+      data: { account, password }
     })
     expect(response.status(), await response.text()).toBe(200)
     const actor = { http, session: (await response.json()).data as SessionData, origin: baseURL! }
@@ -39,7 +40,8 @@ test('evidence previews remain usable and close with their page or revoked sessi
   }
   const api = async <T>(actor: Actor, path: string, method = 'GET', data?: unknown): Promise<T> => {
     const response = await actor.http.fetch(`/api${path}`, {
-      method, headers: { Origin: actor.origin, 'X-CSRF-Token': actor.session.csrfToken },
+      method,
+      headers: { Origin: actor.origin, 'X-CSRF-Token': actor.session.csrfToken },
       ...(method === 'GET' ? {} : { data: data ?? {} })
     })
     expect(response.ok(), await response.text()).toBe(true)
@@ -55,14 +57,28 @@ test('evidence previews remain usable and close with their page or revoked sessi
     const teacher = await login('E2ETEACHER')
     const student = await login('E2ESTUDENT')
     const task = await api<CampusTask>(teacher, '/tasks', 'POST', {
-      title: 'Fictional evidence preview lifecycle', categoryId: 'category-event', campusId: 'campus-main',
-      description: 'Synthetic picture used only to test preview lifecycle.', checklist: [],
-      date: '2098-10-10', startTime: '10:00', endTime: '12:00', signupDeadline: '2098-10-09 10:00',
-      place: 'Fictional room', duration: '120 minutes', capacity: 1, audienceScope: 'school',
-      requirements: [], proofTypes: ['image', 'text'], claimMode: 'direct', contacts: []
+      title: 'Fictional evidence preview lifecycle',
+      categoryId: 'category-event',
+      campusId: 'campus-main',
+      description: 'Synthetic picture used only to test preview lifecycle.',
+      checklist: [],
+      date: '2098-10-10',
+      startTime: '10:00',
+      endTime: '12:00',
+      signupDeadline: '2098-10-09 10:00',
+      place: 'Fictional room',
+      duration: '120 minutes',
+      capacity: 1,
+      audienceScope: 'school',
+      requirements: [],
+      proofTypes: ['image', 'text'],
+      claimMode: 'direct',
+      contacts: []
     })
     await api(student, `/tasks/${task.id}/claim`, 'POST')
-    const png = await sharp({ create: { width: 32, height: 32, channels: 3, background: '#246A49' } }).png().toBuffer()
+    const png = await sharp({ create: { width: 32, height: 32, channels: 3, background: '#246A49' } })
+      .png()
+      .toBuffer()
     const upload = await student.http.post(`/api/files/proof?taskId=${task.id}`, {
       headers: { Origin: student.origin, 'X-CSRF-Token': student.session.csrfToken },
       multipart: { file: { name: 'fictional.png', mimeType: 'image/png', buffer: png } }
@@ -73,8 +89,11 @@ test('evidence previews remain usable and close with their page or revoked sessi
     const submit = async () => {
       const participant = (await api<TaskWorkflow>(student, flowPath)).participants[0]!
       return api<TaskWorkflow>(student, `${flowPath}/submit`, 'POST', {
-        participantId: participant.id, version: participant.version,
-        description: 'Fictional work completed; the green square is synthetic.', note: '', fileIds: [file.id]
+        participantId: participant.id,
+        version: participant.version,
+        description: 'Fictional work completed; the green square is synthetic.',
+        note: '',
+        fileIds: [file.id]
       })
     }
     await submit()
@@ -113,8 +132,11 @@ test('evidence previews remain usable and close with their page or revoked sessi
 
     const participant = (await api<TaskWorkflow>(teacher, flowPath)).participants[0]!
     await api(teacher, `${flowPath}/review`, 'POST', {
-      participantId: participant.id, version: participant.version, revisionId: participant.latestRevisionId,
-      decision: 'changes_requested', feedback: 'Add the fictional handover detail.'
+      participantId: participant.id,
+      version: participant.version,
+      revisionId: participant.latestRevisionId,
+      decision: 'changes_requested',
+      feedback: 'Add the fictional handover detail.'
     })
     await showAs(student, `/student/tasks/${task.id}/submit`)
     await openPreview(page, page.locator('.proof-img-thumb img'))
@@ -126,7 +148,8 @@ test('evidence previews remain usable and close with their page or revoked sessi
     await showAs(teacher, `/teacher/review?task=${task.id}`)
     const revokedPreview = await openPreview(page, page.locator('.review-images-row img'))
     await api(admin, `/admin/accounts/${teacher.session.user!.id}/status`, 'POST', {
-      approval: 'disabled', version: teacher.session.user!.version
+      approval: 'disabled',
+      version: teacher.session.user!.version
     })
     const anonymousSession = page.waitForResponse(response => response.url().endsWith('/api/auth/session'))
     await page.evaluate(() => window.dispatchEvent(new Event('focus')))

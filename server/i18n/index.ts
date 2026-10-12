@@ -8,15 +8,25 @@ import { isInstallationConfigured } from '../installation/state.js'
 
 export function parseAcceptLanguage(value: string | undefined): Locale | undefined {
   if (!value) return undefined
-  return value.split(',').map((part, index) => {
-    const [tag = '', ...parameters] = part.trim().split(';')
-    const qValue = parameters.find((parameter) => parameter.trim().startsWith('q='))?.trim().slice(2)
-    const quality = qValue === undefined ? 1 : Number(qValue)
-    const normalized = tag.toLowerCase()
-    const locale: Locale | undefined = normalized === 'en' || normalized.startsWith('en-') ? 'en'
-      : normalized === 'zh' || normalized.startsWith('zh-') ? 'zh-CN' : undefined
-    return { locale, quality, index }
-  }).filter((item) => item.locale && Number.isFinite(item.quality) && item.quality > 0 && item.quality <= 1)
+  return value
+    .split(',')
+    .map((part, index) => {
+      const [tag = '', ...parameters] = part.trim().split(';')
+      const qValue = parameters
+        .find(parameter => parameter.trim().startsWith('q='))
+        ?.trim()
+        .slice(2)
+      const quality = qValue === undefined ? 1 : Number(qValue)
+      const normalized = tag.toLowerCase()
+      const locale: Locale | undefined =
+        normalized === 'en' || normalized.startsWith('en-')
+          ? 'en'
+          : normalized === 'zh' || normalized.startsWith('zh-')
+            ? 'zh-CN'
+            : undefined
+      return { locale, quality, index }
+    })
+    .filter(item => item.locale && Number.isFinite(item.quality) && item.quality > 0 && item.quality <= 1)
     .sort((a, b) => b.quality - a.quality || a.index - b.index)[0]?.locale
 }
 
@@ -29,10 +39,20 @@ export function resolveRequestLocale(request: FastifyRequest, db: AppDatabase, _
 
 export function localizeApiPayload(payload: string, locale: Locale): string {
   let body: Record<string, unknown>
-  try { body = JSON.parse(payload) as Record<string, unknown> } catch { return payload }
-  if (!body || typeof body !== 'object' || typeof body.ok !== 'boolean' || typeof body.message !== 'string') return payload
-  body.message = translateApiMessage(String(body.code ?? (body.ok ? 'SUCCESS' : 'INTERNAL_ERROR')), body.message,
-    locale, (body.params ?? {}) as MessageParams, body.ok)
+  try {
+    body = JSON.parse(payload) as Record<string, unknown>
+  } catch {
+    return payload
+  }
+  if (!body || typeof body !== 'object' || typeof body.ok !== 'boolean' || typeof body.message !== 'string')
+    return payload
+  body.message = translateApiMessage(
+    String(body.code ?? (body.ok ? 'SUCCESS' : 'INTERNAL_ERROR')),
+    body.message,
+    locale,
+    (body.params ?? {}) as MessageParams,
+    body.ok
+  )
   // Batch review receipts are part of the error contract too. Touch only their
   // explicit {participantId, ok:false, code, message} shape, never authored fields.
   const data = body.data as { results?: unknown[] } | undefined
@@ -40,7 +60,12 @@ export function localizeApiPayload(payload: string, locale: Locale): string {
     for (const result of data.results) {
       if (!result || typeof result !== 'object') continue
       const item = result as Record<string, unknown>
-      if (typeof item.participantId === 'string' && item.ok === false && typeof item.code === 'string' && typeof item.message === 'string') {
+      if (
+        typeof item.participantId === 'string' &&
+        item.ok === false &&
+        typeof item.code === 'string' &&
+        typeof item.message === 'string'
+      ) {
         item.message = translateApiMessage(item.code, item.message, locale, (item.params ?? {}) as MessageParams)
       }
     }

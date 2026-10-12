@@ -18,7 +18,7 @@ async function derive(password: string, salt: Buffer): Promise<Buffer> {
 
 export function validatePassword(password: string): string {
   if (password.length < 8 || password.length > 128) return '密码长度须为 8—128 位'
-  const groups = [/[a-zA-Z]/, /[0-9]/, /[^a-zA-Z0-9]/].filter((rule) => rule.test(password)).length
+  const groups = [/[a-zA-Z]/, /[0-9]/, /[^a-zA-Z0-9]/].filter(rule => rule.test(password)).length
   return groups >= 2 ? '' : '密码须包含字母、数字或符号中的至少两类'
 }
 
@@ -44,9 +44,18 @@ export async function verifyPassword(password: string, encoded?: string): Promis
   const expected = Buffer.from(parts[5], 'base64url')
   if (salt.length !== 16 || expected.length !== keyLength) return false
   const actual = await new Promise<Buffer>((resolve, reject) => {
-    scryptCallback(password.slice(0, 128), salt, expected.length, {
-      N: Number(parts[1]), r: Number(parts[2]), p: Number(parts[3]), maxmem
-    }, (error, derived) => error ? reject(error) : resolve(derived))
+    scryptCallback(
+      password.slice(0, 128),
+      salt,
+      expected.length,
+      {
+        N: Number(parts[1]),
+        r: Number(parts[2]),
+        p: Number(parts[3]),
+        maxmem
+      },
+      (error, derived) => (error ? reject(error) : resolve(derived))
+    )
   })
   return actual.length === expected.length && timingSafeEqual(actual, expected)
 }

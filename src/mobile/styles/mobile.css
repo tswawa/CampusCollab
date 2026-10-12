@@ -1,36 +1,36 @@
 :root {
   /* 官方协同主色：学术蓝（沉稳官方、可信清爽） */
-  --brand: #1E60D5;
-  --brand-dark: #154CB0;
-  --brand-soft: #F0F5FF;
-  --brand-border: #D0E0FC;
-  --brand-light: #EBF2FE;
+  --brand: #1e60d5;
+  --brand-dark: #154cb0;
+  --brand-soft: #f0f5ff;
+  --brand-border: #d0e0fc;
+  --brand-light: #ebf2fe;
 
   /* 状态标准色（克制、高可读、非电商） */
-  --recruiting: #1E60D5;
-  --upcoming: #0284C7;
-  --in-progress: #D97706;
-  --review: #7C3AED;
-  --changes-requested: #E11D48;
+  --recruiting: #1e60d5;
+  --upcoming: #0284c7;
+  --in-progress: #d97706;
+  --review: #7c3aed;
+  --changes-requested: #e11d48;
   --completed: #059669;
-  --cancelled: #64748B;
+  --cancelled: #64748b;
 
   /* 语义辅助色 */
   --success: #059669;
-  --success-soft: #ECFDF5;
-  --warning: #D97706;
-  --warning-soft: #FFFBEB;
-  --danger: #E11D48;
-  --danger-soft: #FFF1F2;
+  --success-soft: #ecfdf5;
+  --warning: #d97706;
+  --warning-soft: #fffbeb;
+  --danger: #e11d48;
+  --danger-soft: #fff1f2;
 
   /* 文字与界面基调 */
-  --text: #1E293B;
-  --muted: #64748B;
-  --subtle: #94A3B8;
-  --line: #E2E8F0;
-  --line-light: #F1F5F9;
-  --surface: #FFFFFF;
-  --background: #F8FAFC;
+  --text: #1e293b;
+  --muted: #64748b;
+  --subtle: #94a3b8;
+  --line: #e2e8f0;
+  --line-light: #f1f5f9;
+  --surface: #ffffff;
+  --background: #f8fafc;
 
   /* 扁平微阴影，杜绝重阴影与花哨光晕 */
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
@@ -51,7 +51,9 @@
   --van-tabs-bottom-bar-color: var(--brand);
 
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", Roboto, "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', Roboto, 'Hiragino Sans GB', 'Microsoft YaHei',
+    sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -72,7 +74,7 @@ body,
 body {
   min-width: 320px;
   min-height: 100vh;
-  background: #EEF2F6;
+  background: #eef2f6;
   color: var(--text);
   font-size: 14px;
   line-height: 1.5;
@@ -129,7 +131,7 @@ button {
   width: min(100%, 480px);
   left: 50%;
   transform: translateX(-50%);
-  background: #FFFFFF;
+  background: #ffffff;
 }
 
 .app-navbar::after {
@@ -160,7 +162,7 @@ button {
   transform: translateX(-50%);
   min-height: 56px;
   border-top: 1px solid var(--line);
-  background: #FFFFFF !important;
+  background: #ffffff !important;
   box-shadow: var(--shadow-bar);
 }
 
@@ -253,7 +255,7 @@ button {
    ========================================================================== */
 .school-brand-header {
   position: relative;
-  background: #FFFFFF;
+  background: #ffffff;
   border-bottom: 1px solid var(--line);
   padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
 }
@@ -277,7 +279,7 @@ button {
   flex: 0 0 38px;
   border-radius: 8px;
   background: var(--brand);
-  color: #FFFFFF;
+  color: #ffffff;
   display: grid;
   place-items: center;
 }
@@ -361,7 +363,7 @@ button {
 /* 个人问候区 */
 .campus-user-banner {
   padding: 14px 16px;
-  background: #FFFFFF;
+  background: #ffffff;
   border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
@@ -410,7 +412,7 @@ button {
 }
 
 .campus-task-card:active {
-  background-color: #F8FAFC;
+  background-color: #f8fafc;
 }
 
 .card-top-row {
@@ -425,7 +427,7 @@ button {
   align-items: center;
   padding: 3px 8px;
   border-radius: 4px;
-  background: #F1F5F9;
+  background: #f1f5f9;
   color: #334155;
   font-size: 14px;
   font-weight: 600;
@@ -546,7 +548,7 @@ button {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: #FFFFFF;
+  background: #ffffff;
   border-bottom: 1px solid var(--line);
 }
 
@@ -556,7 +558,7 @@ button {
 
 .hall-search-header .van-search__content {
   border-radius: 8px;
-  background: #F1F5F9;
+  background: #f1f5f9;
 }
 
 .category-tabs-bar {
@@ -577,7 +579,7 @@ button {
   padding: 0 14px;
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: #FFFFFF;
+  background: #ffffff;
   color: #475569;
   font-size: 14px;
   font-weight: 500;
@@ -590,7 +592,7 @@ button {
 .category-pill-btn.is-active {
   background: var(--brand);
   border-color: var(--brand);
-  color: #FFFFFF;
+  color: #ffffff;
   font-weight: 600;
 }
 
@@ -612,7 +614,7 @@ button {
   padding: 0 12px;
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: #FFFFFF;
+  background: #ffffff;
   color: #475569;
   font-size: 14px;
   cursor: pointer;
@@ -633,7 +635,7 @@ button {
   padding: 0 12px;
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: #FFFFFF;
+  background: #ffffff;
   color: #475569;
   font-size: 14px;
   cursor: pointer;
@@ -683,7 +685,7 @@ button {
   padding: 0 8px;
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: #FFFFFF;
+  background: #ffffff;
   color: #475569;
   font-size: 14px;
   cursor: pointer;
@@ -721,7 +723,7 @@ button {
 
 .detail-main-header {
   padding: 18px 16px;
-  background: #FFFFFF;
+  background: #ffffff;
   border-bottom: 1px solid var(--line);
 }
 
@@ -751,7 +753,7 @@ button {
 .detail-card-section {
   margin: 12px 16px 0;
   padding: 16px;
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 12px;
   box-shadow: var(--shadow-sm);
@@ -830,7 +832,7 @@ button {
   margin-top: 12px;
   padding: 12px 14px;
   border-radius: 8px;
-  background: #F8FAFC;
+  background: #f8fafc;
   border: 1px solid var(--line);
   display: flex;
   align-items: center;
@@ -855,7 +857,7 @@ button {
   padding: 0 14px;
   border: 1px solid var(--brand);
   border-radius: 6px;
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--brand);
   font-size: 14px;
   font-weight: 600;
@@ -919,7 +921,7 @@ button {
   transform: translateX(-50%);
   width: min(100%, 480px);
   padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
-  background: #FFFFFF;
+  background: #ffffff;
   border-top: 1px solid var(--line);
   box-shadow: var(--shadow-bar);
   display: flex;
@@ -959,7 +961,7 @@ button {
 
 .proof-header-card {
   padding: 16px;
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 12px;
   margin-bottom: 12px;
@@ -978,7 +980,7 @@ button {
 }
 
 .proof-field-card {
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 12px;
   overflow: hidden;
@@ -993,7 +995,7 @@ button {
 /* 多图上传区域 */
 .proof-upload-section {
   padding: 16px;
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 12px;
   margin-bottom: 20px;
@@ -1028,7 +1030,7 @@ button {
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--line);
-  background: #F8FAFC;
+  background: #f8fafc;
 }
 
 .proof-img-thumb img {
@@ -1058,7 +1060,7 @@ button {
   aspect-ratio: 1;
   border: 1.5px dashed var(--subtle);
   border-radius: 8px;
-  background: #F8FAFC;
+  background: #f8fafc;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1083,7 +1085,7 @@ button {
    ========================================================================== */
 .review-item-card {
   padding: 16px;
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 12px;
   margin-bottom: 12px;
@@ -1112,7 +1114,7 @@ button {
 
 .review-proof-text {
   padding: 10px 12px;
-  background: #F8FAFC;
+  background: #f8fafc;
   border-radius: 8px;
   border: 1px solid var(--line-light);
   font-size: 14px;
@@ -1158,7 +1160,7 @@ button {
 .auth-shell {
   display: flex;
   flex-direction: column;
-  background: #FFFFFF;
+  background: #ffffff;
 }
 
 .auth-header-bar {
@@ -1224,7 +1226,7 @@ button {
   gap: 8px;
   margin-bottom: 20px;
   padding: 4px;
-  background: #F1F5F9;
+  background: #f1f5f9;
   border-radius: 8px;
 }
 
@@ -1240,7 +1242,7 @@ button {
 }
 
 .auth-role-tab.is-active {
-  background: #FFFFFF;
+  background: #ffffff;
   color: var(--brand);
   box-shadow: var(--shadow-sm);
 }
@@ -1277,7 +1279,7 @@ button {
   margin-top: 28px;
   padding: 14px;
   border-radius: 10px;
-  background: #F8FAFC;
+  background: #f8fafc;
   border: 1px solid var(--line);
 }
 
@@ -1586,7 +1588,9 @@ button {
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .admin-nav-link .van-icon {
@@ -2442,6 +2446,8 @@ textarea.admin-input-control {
     min-height: calc(100vh - 32px);
     margin: 16px auto;
     border-radius: 20px;
-    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.05);
+    box-shadow:
+      0 12px 36px rgba(15, 23, 42, 0.12),
+      0 0 0 1px rgba(15, 23, 42, 0.05);
   }
 }

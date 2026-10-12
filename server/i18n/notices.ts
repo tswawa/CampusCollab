@@ -81,29 +81,54 @@ export const noticeTemplates: Record<string, NoticeTemplate> = {
 
 function eventText(eventType: string, params: MessageParams, locale: Locale): [string, string] | undefined {
   const template = noticeTemplates[eventType]?.[locale]
-  return template ? [formatMessage(template[0], params), formatMessage(template[1], { feedback: '', ...params }).trim()] : undefined
+  return template
+    ? [formatMessage(template[0], params), formatMessage(template[1], { feedback: '', ...params }).trim()]
+    : undefined
 }
 
-export function createEventNotice(db: AppDatabase, userId: string, eventType: string, params: MessageParams,
-  target?: NoticeTarget, type: 'task' | 'review' | 'system' = 'task', timestamp = nowIso()) {
+export function createEventNotice(
+  db: AppDatabase,
+  userId: string,
+  eventType: string,
+  params: MessageParams,
+  target?: NoticeTarget,
+  type: 'task' | 'review' | 'system' = 'task',
+  timestamp = nowIso()
+) {
   const translated = eventText(eventType, params, 'zh-CN')
   if (!translated) throw new Error(`Unknown notification event: ${eventType}`)
   const id = createId('notice')
-  db.run(`INSERT INTO notices(id, user_id, title, content, type, read, created_at, event_type, event_params_json, target_kind, target_id)
-    VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)`, id, userId, translated[0], translated[1], type,
-  timestamp, eventType, JSON.stringify(params), target?.kind ?? null, target?.id ?? null)
+  db.run(
+    `INSERT INTO notices(id, user_id, title, content, type, read, created_at, event_type, event_params_json, target_kind, target_id)
+    VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)`,
+    id,
+    userId,
+    translated[0],
+    translated[1],
+    type,
+    timestamp,
+    eventType,
+    JSON.stringify(params),
+    target?.kind ?? null,
+    target?.id ?? null
+  )
   enqueueNoticeEmail(db, id, userId)
   return id
 }
 
 function authorizedTarget(db: AppDatabase, row: SqlRow, user: CampusUser): NoticeTarget | undefined {
   if (!row.target_id) return undefined
-  if (row.target_kind === 'accounts') return user.role === 'admin' ? { kind: 'accounts', id: String(row.target_id) } : undefined
+  if (row.target_kind === 'accounts')
+    return user.role === 'admin' ? { kind: 'accounts', id: String(row.target_id) } : undefined
   if (row.target_kind !== 'task') return undefined
   const task = db.get('SELECT * FROM tasks WHERE id = ?', String(row.target_id))
   if (!task) return undefined
-  const authorized = user.role === 'admin' || (user.role === 'teacher' && String(task.teacher_id) === user.id) ||
-    (user.role === 'student' && (isTaskVisibleTo(task, user) || Boolean(db.get('SELECT 1 FROM task_members WHERE task_id = ? AND user_id = ?', String(task.id), user.id))))
+  const authorized =
+    user.role === 'admin' ||
+    (user.role === 'teacher' && String(task.teacher_id) === user.id) ||
+    (user.role === 'student' &&
+      (isTaskVisibleTo(task, user) ||
+        Boolean(db.get('SELECT 1 FROM task_members WHERE task_id = ? AND user_id = ?', String(task.id), user.id))))
   return authorized ? { kind: 'task', id: String(task.id) } : undefined
 }
 
@@ -114,10 +139,21 @@ export function mapLocalizedNotice(db: AppDatabase, row: SqlRow, user: CampusUse
   try {
     const candidate: unknown = JSON.parse(String(row.event_params_json ?? '{}'))
     if (candidate && typeof candidate === 'object' && !Array.isArray(candidate)) {
-      params = Object.fromEntries(Object.entries(candidate).filter(([, value]) => value === null || ['string', 'number', 'boolean'].includes(typeof value))) as MessageParams
+      params = Object.fromEntries(
+        Object.entries(candidate).filter(
+          ([, value]) => value === null || ['string', 'number', 'boolean'].includes(typeof value)
+        )
+      ) as MessageParams
     }
-  } catch { /* Preserve readable historical text when an old event is malformed. */ }
+  } catch {
+    /* Preserve readable historical text when an old event is malformed. */
+  }
   const translated = eventText(String(row.event_type), params, locale)
-  return { ...legacy, ...(translated ? { title: translated[0], content: translated[1] } : {}),
-    eventType: String(row.event_type), eventParams: params, target: authorizedTarget(db, row, user) }
+  return {
+    ...legacy,
+    ...(translated ? { title: translated[0], content: translated[1] } : {}),
+    eventType: String(row.event_type),
+    eventParams: params,
+    target: authorizedTarget(db, row, user)
+  }
 }

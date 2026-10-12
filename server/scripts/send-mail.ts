@@ -11,4 +11,6 @@ try {
   const result = await drainMailQueue(db, undefined, 100)
   process.stdout.write(`${JSON.stringify(result)}\n`)
   if (result.failed > 0) process.exitCode = 1
-} finally { db.close() }
+} finally {
+  db.close()
+}

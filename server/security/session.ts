@@ -21,11 +21,17 @@ export interface SessionContext {
 }
 
 export class SessionService {
-  constructor(private readonly db: AppDatabase, private readonly config: AppConfig) {}
+  constructor(
+    private readonly db: AppDatabase,
+    private readonly config: AppConfig
+  ) {}
 
   private setCookie(reply: FastifyReply, token: string, ttlSeconds: number) {
     reply.setCookie(cookieName, token, {
-      path: '/', httpOnly: true, sameSite: 'lax', secure: this.config.secureCookie,
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: this.config.secureCookie,
       maxAge: ttlSeconds
     })
   }
@@ -37,10 +43,18 @@ export class SessionService {
     const expiresAt = Date.now() + ttl * 1000
     const hash = tokenHash(token)
     const timestamp = nowIso()
-    this.db.run(`INSERT INTO sessions(token_hash, user_id, csrf_token, expires_at, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?)`, hash, userId, csrfToken, expiresAt, timestamp, timestamp)
+    this.db.run(
+      `INSERT INTO sessions(token_hash, user_id, csrf_token, expires_at, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)`,
+      hash,
+      userId,
+      csrfToken,
+      expiresAt,
+      timestamp,
+      timestamp
+    )
     this.setCookie(reply, token, ttl)
-    return { tokenHash: hash, csrfToken, user: userId ? getUserById(this.db, userId) ?? null : null, expiresAt }
+    return { tokenHash: hash, csrfToken, user: userId ? (getUserById(this.db, userId) ?? null) : null, expiresAt }
   }
 
   resolve(request: FastifyRequest): SessionContext | null {
@@ -53,7 +67,7 @@ export class SessionService {
       this.db.run('DELETE FROM sessions WHERE token_hash = ?', hash)
       return null
     }
-    const user = row.user_id ? getUserById(this.db, String(row.user_id)) ?? null : null
+    const user = row.user_id ? (getUserById(this.db, String(row.user_id)) ?? null) : null
     if (row.user_id && (!user || user.approval !== 'approved')) {
       this.db.run('DELETE FROM sessions WHERE token_hash = ?', hash)
       return null

@@ -10,7 +10,7 @@ const props = defineProps<{
 
 const meta = computed(() => {
   if (props.status === 'applied') {
-    return { label: msg("待确认"), color: '#7C3AED', bgColor: '#EDE9FE' }
+    return { label: msg('待确认'), color: '#7C3AED', bgColor: '#EDE9FE' }
   }
   const key = props.status as UnifiedTaskStatus
   return (
@@ -24,10 +24,7 @@ const meta = computed(() => {
 </script>
 
 <template>
-  <span
-    class="unified-status-tag"
-    :style="{ color: meta.color, backgroundColor: meta.bgColor }"
-  >
+  <span class="unified-status-tag" :style="{ color: meta.color, backgroundColor: meta.bgColor }">
     <span class="status-indicator-dot" :style="{ backgroundColor: meta.color }" />
     {{ meta.label }}
   </span>

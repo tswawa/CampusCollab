@@ -14,7 +14,11 @@ test('historical preview CLI preserves text IDs and provenance, writes no formul
     const inputFile = path.join(root, 'input.json')
     const output = path.join(root, 'preview')
     fs.writeFileSync(inputFile, JSON.stringify(fixture))
-    const run = () => spawnSync(process.execPath, ['--import', 'tsx', 'server/scripts/template-preview.ts', inputFile, output], { cwd: process.cwd(), encoding: 'utf8' })
+    const run = () =>
+      spawnSync(process.execPath, ['--import', 'tsx', 'server/scripts/template-preview.ts', inputFile, output], {
+        cwd: process.cwd(),
+        encoding: 'utf8'
+      })
     const result = run()
     assert.equal(result.status, 0, result.stderr)
     const json = JSON.parse(fs.readFileSync(path.join(output, 'preview.json'), 'utf8'))
@@ -32,5 +36,7 @@ test('historical preview CLI preserves text IDs and provenance, writes no formul
     const before = fs.readFileSync(path.join(output, 'preview.xlsx'))
     assert.notEqual(run().status, 0)
     assert.deepEqual(fs.readFileSync(path.join(output, 'preview.xlsx')), before)
-  } finally { fs.rmSync(root, { recursive: true, force: true }) }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true })
+  }
 })

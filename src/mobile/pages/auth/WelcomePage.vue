@@ -8,7 +8,12 @@ const router = useRouter()
 const system = useSystemStore()
 const institutionInitial = computed(() => Array.from(system.school.name.trim())[0]?.toLocaleUpperCase() ?? '·')
 const logoFailed = ref(false)
-watch(() => system.school.logo, () => { logoFailed.value = false })
+watch(
+  () => system.school.logo,
+  () => {
+    logoFailed.value = false
+  }
+)
 </script>
 
 <template>
@@ -62,12 +67,14 @@ watch(() => system.school.logo, () => { logoFailed.value = false })
           block
           style="height: 48px; border-radius: 8px; font-size: 15px; font-weight: 700"
           @click="router.push('/login')"
-        >{{ msg("校园账号登录") }}</van-button>
+          >{{ msg('校园账号登录') }}</van-button
+        >
         <van-button
           block
           style="height: 48px; border-radius: 8px; font-size: 15px; font-weight: 600"
           @click="router.push('/register')"
-        >{{ msg("注册账号") }}</van-button>
+          >{{ msg('注册账号') }}</van-button
+        >
       </div>
 
       <div style="margin-top: 24px; text-align: center; font-size: 14px; color: var(--muted)">
@@ -78,5 +85,15 @@ watch(() => system.school.logo, () => { logoFailed.value = false })
 </template>
 
 <style scoped>
-.institution-logo-fallback { display: grid; place-items: center; width: 100%; height: 100%; background: #eaf1f7; color: #315c7c; font-size: 38px; font-weight: 650; line-height: 1; }
+.institution-logo-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background: #eaf1f7;
+  color: #315c7c;
+  font-size: 38px;
+  font-weight: 650;
+  line-height: 1;
+}
 </style>

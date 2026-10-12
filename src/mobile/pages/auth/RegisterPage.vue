@@ -38,33 +38,31 @@ const form = reactive({
 const departments = computed(() => catalog.activeDepartments)
 const grades = computed(() => catalog.activeGrades)
 const classOptions = computed(() => catalog.classesFor(form.department, form.grade))
-const { loading, error: loadError, reload } = useLoad((signal) => catalog.fetchCatalog(signal))
-const accountLabel = computed(() => (isStudent.value ? msg("学号") : msg("教工号")))
+const { loading, error: loadError, reload } = useLoad(signal => catalog.fetchCatalog(signal))
+const accountLabel = computed(() => (isStudent.value ? msg('学号') : msg('教工号')))
 const passwordStrong = computed(
   () =>
     form.password.length >= 8 &&
-    [/[a-zA-Z]/, /[0-9]/, /[^a-zA-Z0-9]/].filter((rule) => rule.test(form.password)).length >= 2
+    [/[a-zA-Z]/, /[0-9]/, /[^a-zA-Z0-9]/].filter(rule => rule.test(form.password)).length >= 2
 )
 
-watch(
-  [departments, grades, classOptions],
-  () => {
-    if (!departments.value.some((item) => item.id === form.department)) form.department = ''
-    if (!grades.value.some((item) => item.id === form.grade)) form.grade = ''
-    if (!classOptions.value.some((item) => item.id === form.className)) form.className = ''
-  }
-)
+watch([departments, grades, classOptions], () => {
+  if (!departments.value.some(item => item.id === form.department)) form.department = ''
+  if (!grades.value.some(item => item.id === form.grade)) form.grade = ''
+  if (!classOptions.value.some(item => item.id === form.className)) form.className = ''
+})
 
 function validate() {
   if (!system.school.registrationEnabled) return msg('机构已关闭注册')
-  if (!form.name.trim() || form.name.trim().length > 100) return msg("请输入真实姓名")
-  if (form.account.trim().length < 4 || form.account.trim().length > 254 || /\s/.test(form.account.trim())) return msg('账号应为4—254位用户名或邮箱')
-  if (!form.isExternal && system.school.requireDepartment && !form.department) return msg("请选择所属学院")
-  if (!form.isExternal && isStudent.value && system.school.requireGrade && !form.grade) return msg("请选择入学年级")
-  if (!form.isExternal && isStudent.value && system.school.requireClass && !form.className) return msg("请选择行政班级")
-  if (!passwordStrong.value) return msg("密码至少 8 位，包含字母、数字或符号两类")
-  if (form.password !== form.confirmPassword) return msg("两次输入的密码不一致")
-  if (!agreement.value) return msg("请确认登记资料真实")
+  if (!form.name.trim() || form.name.trim().length > 100) return msg('请输入真实姓名')
+  if (form.account.trim().length < 4 || form.account.trim().length > 254 || /\s/.test(form.account.trim()))
+    return msg('账号应为4—254位用户名或邮箱')
+  if (!form.isExternal && system.school.requireDepartment && !form.department) return msg('请选择所属学院')
+  if (!form.isExternal && isStudent.value && system.school.requireGrade && !form.grade) return msg('请选择入学年级')
+  if (!form.isExternal && isStudent.value && system.school.requireClass && !form.className) return msg('请选择行政班级')
+  if (!passwordStrong.value) return msg('密码至少 8 位，包含字母、数字或符号两类')
+  if (form.password !== form.confirmPassword) return msg('两次输入的密码不一致')
+  if (!agreement.value) return msg('请确认登记资料真实')
   return ''
 }
 
@@ -96,10 +94,25 @@ async function submit() {
         password: form.password
       }
   try {
-    await auth.register({ ...payload, locale: locale.value, email: form.email.trim() || undefined, externalId: form.externalId.trim() || undefined, isExternal: form.isExternal })
-    await router.replace({ path: '/register-success', query: { role: role.value, pending: form.isExternal || role.value === 'teacher' ? '1' : undefined } })
-  } catch (error) { if (!isCancelled(error)) { formError.value = errorMessage(error); showToast(formError.value) } }
-  finally { submitting.value = false }
+    await auth.register({
+      ...payload,
+      locale: locale.value,
+      email: form.email.trim() || undefined,
+      externalId: form.externalId.trim() || undefined,
+      isExternal: form.isExternal
+    })
+    await router.replace({
+      path: '/register-success',
+      query: { role: role.value, pending: form.isExternal || role.value === 'teacher' ? '1' : undefined }
+    })
+  } catch (error) {
+    if (!isCancelled(error)) {
+      formError.value = errorMessage(error)
+      showToast(formError.value)
+    }
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 
@@ -110,7 +123,7 @@ async function submit() {
         <van-icon name="arrow-left" size="18" />
       </button>
       <span style="font-size: 16px; font-weight: 700; color: var(--text)">
-        {{ isStudent ? msg("在籍学生注册") : msg("教师教工登记") }}
+        {{ isStudent ? msg('在籍学生注册') : msg('教师教工登记') }}
       </span>
       <span style="width: 44px" />
     </header>
@@ -125,7 +138,7 @@ async function submit() {
       </div>
 
       <!-- 身份信息表单 -->
-      <div style="font-size: 14px; font-weight: 700; color: #475569; margin: 0 2px 6px">{{ msg("基本信息") }}</div>
+      <div style="font-size: 14px; font-weight: 700; color: #475569; margin: 0 2px 6px">{{ msg('基本信息') }}</div>
       <van-form class="surface-card" style="overflow: hidden; margin-bottom: 16px">
         <van-field
           v-model="form.name"
@@ -143,39 +156,74 @@ async function submit() {
         />
 
         <div style="padding: 12px 16px; border-top: 1px solid var(--line)">
-          <label for="registration-department" style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px">{{ msg("所属学院") }} {{ !system.school.requireDepartment || form.isExternal ? msg('选填') : '*' }}</label>
+          <label
+            for="registration-department"
+            style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px"
+            >{{ msg('所属学院') }} {{ !system.school.requireDepartment || form.isExternal ? msg('选填') : '*' }}</label
+          >
           <select
             id="registration-department"
             v-model="form.department"
-            style="width: 100%; height: 42px; border: 1px solid var(--line); border-radius: 6px; padding: 0 10px; background: #fff"
+            style="
+              width: 100%;
+              height: 42px;
+              border: 1px solid var(--line);
+              border-radius: 6px;
+              padding: 0 10px;
+              background: #fff;
+            "
           >
-            <option value="">{{ msg("请选择学院") }}</option>
+            <option value="">{{ msg('请选择学院') }}</option>
             <option v-for="item in departments" :key="item.id" :value="item.id">{{ item.name }}</option>
           </select>
         </div>
 
         <template v-if="isStudent">
           <div style="padding: 12px 16px; border-top: 1px solid var(--line)">
-            <label for="registration-grade" style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px">{{ msg("年级") }} {{ !system.school.requireGrade || form.isExternal ? msg('选填') : '*' }}</label>
+            <label
+              for="registration-grade"
+              style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px"
+              >{{ msg('年级') }} {{ !system.school.requireGrade || form.isExternal ? msg('选填') : '*' }}</label
+            >
             <select
               id="registration-grade"
               v-model="form.grade"
-              style="width: 100%; height: 42px; border: 1px solid var(--line); border-radius: 6px; padding: 0 10px; background: #fff"
+              style="
+                width: 100%;
+                height: 42px;
+                border: 1px solid var(--line);
+                border-radius: 6px;
+                padding: 0 10px;
+                background: #fff;
+              "
             >
-              <option value="">{{ msg("请选择入学年级") }}</option>
+              <option value="">{{ msg('请选择入学年级') }}</option>
               <option v-for="item in grades" :key="item.id" :value="item.id">{{ item.name }}</option>
             </select>
           </div>
 
           <div style="padding: 12px 16px; border-top: 1px solid var(--line)">
-            <label for="registration-class" style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px">{{ msg("行政班级") }} {{ !system.school.requireClass || form.isExternal ? msg('选填') : '*' }}</label>
+            <label
+              for="registration-class"
+              style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px"
+              >{{ msg('行政班级') }} {{ !system.school.requireClass || form.isExternal ? msg('选填') : '*' }}</label
+            >
             <select
               id="registration-class"
               v-model="form.className"
               :disabled="!form.department || !form.grade"
-              style="width: 100%; height: 42px; border: 1px solid var(--line); border-radius: 6px; padding: 0 10px; background: #fff"
+              style="
+                width: 100%;
+                height: 42px;
+                border: 1px solid var(--line);
+                border-radius: 6px;
+                padding: 0 10px;
+                background: #fff;
+              "
             >
-              <option value="" disabled>{{ !form.department ? msg("请先选择学院") : !form.grade ? msg("请先选择年级") : msg("请选择班级") }}</option>
+              <option value="" disabled>
+                {{ !form.department ? msg('请先选择学院') : !form.grade ? msg('请先选择年级') : msg('请选择班级') }}
+              </option>
               <option v-for="item in classOptions" :key="item.id" :value="item.id">{{ item.name }}</option>
             </select>
           </div>
@@ -184,11 +232,13 @@ async function submit() {
 
       <!-- 密码设置 -->
       <section class="surface-card" style="padding: 16px; margin-bottom: 16px">
-        <van-checkbox v-if="system.school.allowExternalParticipants && isStudent" v-model="form.isExternal">{{ msg('校外参与者') }}</van-checkbox>
+        <van-checkbox v-if="system.school.allowExternalParticipants && isStudent" v-model="form.isExternal">{{
+          msg('校外参与者')
+        }}</van-checkbox>
         <van-field v-model="form.email" :label="msg('电子邮箱（选填）')" type="email" autocomplete="email" />
         <van-field v-model="form.externalId" :label="msg('外部编号（选填）')" maxlength="100" />
       </section>
-      <div style="font-size: 14px; font-weight: 700; color: #475569; margin: 0 2px 6px">{{ msg("登录密码") }}</div>
+      <div style="font-size: 14px; font-weight: 700; color: #475569; margin: 0 2px 6px">{{ msg('登录密码') }}</div>
       <van-form class="surface-card" style="overflow: hidden; margin-bottom: 12px">
         <van-field
           v-model="form.password"
@@ -210,9 +260,11 @@ async function submit() {
 
       <div style="margin: 14px 4px 18px">
         <van-checkbox v-model="agreement" shape="square" icon-size="16px">
-          <span style="font-size: 14px; color: var(--text)">{{ msg("我确认登记资料真实") }}</span>
+          <span style="font-size: 14px; color: var(--text)">{{ msg('我确认登记资料真实') }}</span>
         </van-checkbox>
-        <p v-if="!isStudent || form.isExternal" style="margin: 12px 0 0; font-size: 14px; color: var(--muted)">{{ msg("账号需管理员审核通过后方可登录。") }}</p>
+        <p v-if="!isStudent || form.isExternal" style="margin: 12px 0 0; font-size: 14px; color: var(--muted)">
+          {{ msg('账号需管理员审核通过后方可登录。') }}
+        </p>
       </div>
 
       <van-button
@@ -223,7 +275,7 @@ async function submit() {
         :disabled="!system.school.registrationEnabled"
         @click="submit"
       >
-        {{ isStudent ? msg("注册账号") : msg("提交教师登记申请") }}
+        {{ isStudent ? msg('注册账号') : msg('提交教师登记申请') }}
       </van-button>
     </main>
   </div>

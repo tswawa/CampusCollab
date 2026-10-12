@@ -6,8 +6,12 @@ async function noPersonalLanguageSwitch(page: Page) {
   await expect(page.getByRole('combobox', { name: /^(Language|语言)$/ })).toHaveCount(0)
 }
 
-test.afterEach(async ({ browser, baseURL }) => { await setInstitutionLocale(browser, 'zh-CN', baseURL) })
-test.afterAll(async ({ browser }) => { await disposeInstitutionSession(browser) })
+test.afterEach(async ({ browser, baseURL }) => {
+  await setInstitutionLocale(browser, 'zh-CN', baseURL)
+})
+test.afterAll(async ({ browser }) => {
+  await disposeInstitutionSession(browser)
+})
 
 test('管理员保存机构语言后，已有成员会话和公共入口统一采用新版本', async ({ browser, page, baseURL }, testInfo) => {
   await setInstitutionLocale(browser, 'zh-CN', baseURL)
@@ -34,7 +38,10 @@ test('管理员保存机构语言后，已有成员会话和公共入口统一�
     await page.getByLabel('登录密码', { exact: true }).fill('E2E@Browser123')
     await page.getByRole('button', { name: '登 录', exact: true }).click()
     await expect(page).toHaveURL('/admin/home')
-    await page.getByRole('navigation', { name: '管理员后台导航', exact: true }).getByRole('link', { name: '系统设置', exact: true }).click()
+    await page
+      .getByRole('navigation', { name: '管理员后台导航', exact: true })
+      .getByRole('link', { name: '系统设置', exact: true })
+      .click()
     await expect(page).toHaveURL('/admin/settings')
     const edition = page.getByRole('radio', { name: '英文版', exact: true })
     await edition.check()
@@ -43,7 +50,9 @@ test('管理员保存机构语言后，已有成员会话和公共入口统一�
     const before = await page.request.get('/api/school')
     expect((await before.json()).data.defaultLocale).toBe('zh-CN')
     const [saved] = await Promise.all([
-      page.waitForResponse(response => new URL(response.url()).pathname === '/api/admin/school' && response.request().method() === 'PUT'),
+      page.waitForResponse(
+        response => new URL(response.url()).pathname === '/api/admin/school' && response.request().method() === 'PUT'
+      ),
       page.getByRole('button', { name: '保存设置', exact: true }).click()
     ])
     expect(saved.status(), await saved.text()).toBe(200)
@@ -53,24 +62,38 @@ test('管理员保存机构语言后，已有成员会话和公共入口统一�
     await expect(page.locator('.admin-unsaved-note')).toHaveCount(0)
     await expect(page.locator('.language-bar')).toHaveCount(0)
 
-    for (const [width, height] of [[1440, 1000], [768, 1024], [390, 844]] as const) {
+    for (const [width, height] of [
+      [1440, 1000],
+      [768, 1024],
+      [390, 844]
+    ] as const) {
       await page.setViewportSize({ width, height })
       const save = page.getByRole('button', { name: 'Save settings', exact: true })
       await save.scrollIntoViewIfNeeded()
       await expect(save).toBeInViewport({ ratio: 1 })
       const dimensions = await save.evaluate(element => {
         const rect = element.getBoundingClientRect()
-        return { left: rect.left, right: rect.right, height: rect.height, scroll: element.scrollWidth, client: element.clientWidth }
+        return {
+          left: rect.left,
+          right: rect.right,
+          height: rect.height,
+          scroll: element.scrollWidth,
+          client: element.clientWidth
+        }
       })
       expect(dimensions.left).toBeGreaterThanOrEqual(0)
       expect(dimensions.right).toBeLessThanOrEqual(width)
       expect(dimensions.height).toBeGreaterThanOrEqual(36)
       expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.client + 1)
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)
+      ).toBe(true)
       await page.evaluate(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }))
       await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
       await expect(page.locator('.van-toast:visible')).toHaveCount(0)
-      await expect.poll(() => page.locator('.admin-topbar').evaluate(element => element.getBoundingClientRect().top)).toBe(0)
+      await expect
+        .poll(() => page.locator('.admin-topbar').evaluate(element => element.getBoundingClientRect().top))
+        .toBe(0)
       await page.screenshot({ path: testInfo.outputPath(`admin-settings-en-${width}.png`), fullPage: true })
     }
 
@@ -86,5 +109,8 @@ test('管理员保存机构语言后，已有成员会话和公共入口统一�
     await expect(publicPage.locator('html')).toHaveAttribute('lang', 'en')
     await expect(publicPage.getByRole('button', { name: 'Create an account', exact: true })).toBeVisible()
     await noPersonalLanguageSwitch(publicPage)
-  } finally { await member.close(); await visitor.close() }
+  } finally {
+    await member.close()
+    await visitor.close()
+  }
 })

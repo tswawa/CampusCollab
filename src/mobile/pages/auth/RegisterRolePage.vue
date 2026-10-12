@@ -11,7 +11,7 @@ const router = useRouter()
       <button class="auth-back-btn" :aria-label="msg('返回')" @click="router.back()">
         <van-icon name="arrow-left" size="18" />
       </button>
-      <h1 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text)">{{ msg("选择注册身份") }}</h1>
+      <h1 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text)">{{ msg('选择注册身份') }}</h1>
       <span style="width: 44px" />
     </header>
 
@@ -48,7 +48,7 @@ const router = useRouter()
             🎓
           </div>
           <div style="flex: 1">
-            <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text)">{{ msg("在籍学生") }}</h2>
+            <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text)">{{ msg('在籍学生') }}</h2>
           </div>
           <van-icon name="arrow" color="#94A3B8" />
         </article>
@@ -74,7 +74,7 @@ const router = useRouter()
               width: 44px;
               height: 44px;
               border-radius: 10px;
-              background: #ECFDF5;
+              background: #ecfdf5;
               color: var(--completed);
               display: grid;
               place-items: center;
@@ -84,14 +84,16 @@ const router = useRouter()
             👩‍🏫
           </div>
           <div style="flex: 1">
-            <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text)">{{ msg("指导教师 / 教职工") }}</h2>
+            <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text)">
+              {{ msg('指导教师 / 教职工') }}
+            </h2>
           </div>
           <van-icon name="arrow" color="#94A3B8" />
         </article>
       </div>
 
       <div style="text-align: center; margin-top: 32px; font-size: 14px; color: var(--muted)">
-        <button class="text-link" @click="router.push('/login')">{{ msg("直接登录") }}</button>
+        <button class="text-link" @click="router.push('/login')">{{ msg('直接登录') }}</button>
       </div>
     </main>
   </div>

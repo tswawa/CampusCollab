@@ -15,19 +15,27 @@ async function login(page: Page, account: string, expectedPath: string) {
 }
 
 async function api<T>(page: Page, path: string, method = 'GET', body?: unknown): Promise<ApiResponse<T>> {
-  return page.evaluate(async ({ path, method, body }) => {
-    const session = await fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store' }).then((response) => response.json())
-    const headers: Record<string, string> = { Accept: 'application/json' }
-    if (method !== 'GET') {
-      headers['Content-Type'] = 'application/json'
-      headers['X-CSRF-Token'] = session.data.csrfToken
-    }
-    const response = await fetch(`/api${path}`, {
-      method, credentials: 'same-origin', cache: 'no-store', headers,
-      body: method === 'GET' ? undefined : JSON.stringify(body ?? {})
-    })
-    return { status: response.status, body: await response.json() }
-  }, { path, method, body })
+  return page.evaluate(
+    async ({ path, method, body }) => {
+      const session = await fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store' }).then(
+        response => response.json()
+      )
+      const headers: Record<string, string> = { Accept: 'application/json' }
+      if (method !== 'GET') {
+        headers['Content-Type'] = 'application/json'
+        headers['X-CSRF-Token'] = session.data.csrfToken
+      }
+      const response = await fetch(`/api${path}`, {
+        method,
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers,
+        body: method === 'GET' ? undefined : JSON.stringify(body ?? {})
+      })
+      return { status: response.status, body: await response.json() }
+    },
+    { path, method, body }
+  )
 }
 
 async function contextPage(browser: Browser): Promise<{ context: BrowserContext; page: Page }> {
@@ -91,8 +99,12 @@ test('生产构建在独立会话完成真实任务闭环、冲突保护和账�
     await student.page.getByRole('button', { name: '提交完成凭证' }).click()
     await expect(student.page.locator('.proof-form-container')).toBeVisible()
 
-    const png = await sharp({ create: { width: 80, height: 80, channels: 3, background: '#246A49' } }).png().toBuffer()
-    await student.page.locator('input[type=file][multiple]').setInputFiles({ name: '现场凭证.png', mimeType: 'image/png', buffer: png })
+    const png = await sharp({ create: { width: 80, height: 80, channels: 3, background: '#246A49' } })
+      .png()
+      .toBuffer()
+    await student.page
+      .locator('input[type=file][multiple]')
+      .setInputFiles({ name: '现场凭证.png', mimeType: 'image/png', buffer: png })
     await expect(student.page.locator('.proof-img-thumb img')).toHaveCount(1)
     await student.page.getByLabel('完成说明').fill('已完成设备编号核对、异常登记和现场交接。')
     await student.page.getByLabel('补充备注').fill('生产端真实图片上传')
@@ -138,9 +150,15 @@ test('生产构建在独立会话完成真实任务闭环、冲突保护和账�
     await page.goto(`/admin/tasks?task=${taskId}`)
     await expect(page.getByRole('heading', { name: title })).toBeVisible()
     await expect(page.getByText('参与学生与凭证')).toBeVisible()
-    await expect(page.locator('.admin-table-row').filter({ hasText: title }).locator('.admin-task-status')).toHaveText('已完成')
+    await expect(page.locator('.admin-table-row').filter({ hasText: title }).locator('.admin-task-status')).toHaveText(
+      '已完成'
+    )
     await page.getByRole('button', { name: '关闭任务详情', exact: true }).click()
-    await page.locator('.admin-table-row').filter({ hasText: title }).getByRole('button', { name: '编辑', exact: true }).click()
+    await page
+      .locator('.admin-table-row')
+      .filter({ hasText: title })
+      .getByRole('button', { name: '编辑', exact: true })
+      .click()
     const taskEditor = page.getByRole('dialog', { name: '编辑任务', exact: true })
     await expect(taskEditor.getByText('当前状态', { exact: true })).toBeVisible()
     await expect(taskEditor).not.toContainText('执行进度由接单与验收更新')
@@ -148,11 +166,22 @@ test('生产构建在独立会话完成真实任务闭环、冲突保护和账�
     await expect(taskEditor.getByRole('button', { name: '保存任务', exact: true })).toBeEnabled()
     await taskEditor.getByRole('button', { name: '取消', exact: true }).click()
 
-    const schoolA = await api<{ version: number; name: string; platformName: string; badge: string; announcement: string; primaryColor: string }>(page, '/school')
+    const schoolA = await api<{
+      version: number
+      name: string
+      platformName: string
+      badge: string
+      announcement: string
+      primaryColor: string
+    }>(page, '/school')
     const schoolB = await api<typeof schoolA.body.data>(secondAdmin.page, '/school')
     const schoolPayload = (school: NonNullable<typeof schoolA.body.data>) => ({
-      name: school.name, platformName: school.platformName, badge: school.badge,
-      announcement: school.announcement, primaryColor: school.primaryColor, version: school.version
+      name: school.name,
+      platformName: school.platformName,
+      badge: school.badge,
+      announcement: school.announcement,
+      primaryColor: school.primaryColor,
+      version: school.version
     })
     const updateA = await api(page, '/admin/school', 'PUT', {
       ...schoolPayload(schoolA.body.data!),
@@ -170,16 +199,21 @@ test('生产构建在独立会话完成真实任务闭环、冲突保护和账�
     await student.page.goto('/student/home')
     await expect(student.page.getByText('多会话品牌同步公告')).toBeVisible()
 
-    const accounts = await api<{ items: Array<{ id: string; account: string; approval: string; version: number }> }>(page, '/admin/accounts?pageSize=100')
-    const studentAccount = accounts.body.data!.items.find((item) => item.account === 'E2ESTUDENT')!
+    const accounts = await api<{ items: Array<{ id: string; account: string; approval: string; version: number }> }>(
+      page,
+      '/admin/accounts?pageSize=100'
+    )
+    const studentAccount = accounts.body.data!.items.find(item => item.account === 'E2ESTUDENT')!
     const disabled = await api<{ version: number }>(page, `/admin/accounts/${studentAccount.id}/status`, 'POST', {
-      approval: 'disabled', version: studentAccount.version
+      approval: 'disabled',
+      version: studentAccount.version
     })
     expect(disabled.status).toBe(200)
     await student.page.goto('/student/home')
     await expect(student.page).toHaveURL(/\/login\?redirect=/)
     const enabled = await api(page, `/admin/accounts/${studentAccount.id}/status`, 'POST', {
-      approval: 'approved', version: disabled.body.data!.version
+      approval: 'approved',
+      version: disabled.body.data!.version
     })
     expect(enabled.status).toBe(200)
 
@@ -187,7 +221,13 @@ test('生产构建在独立会话完成真实任务闭环、冲突保护和账�
     expect(unknown.status).toBe(404)
     expect(unknown.body.code).toBe('API_NOT_FOUND')
     expect(await page.evaluate(() => document.cookie)).toBe('')
-    expect(await page.evaluate(() => performance.getEntriesByType('resource').some((entry) => entry.name.includes('/src/') || entry.name.includes('/@vite/')))).toBe(false)
+    expect(
+      await page.evaluate(() =>
+        performance
+          .getEntriesByType('resource')
+          .some(entry => entry.name.includes('/src/') || entry.name.includes('/@vite/'))
+      )
+    ).toBe(false)
     const response = await page.request.get('/admin/tasks')
     expect(response.status()).toBe(200)
     expect(response.headers()['content-security-policy']).toContain("default-src 'self'")

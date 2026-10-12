@@ -20,7 +20,11 @@ const user = computed(() => auth.currentUser)
   <header class="school-brand-header">
     <div class="school-brand-row">
       <div class="school-brand-left">
-        <div class="school-emblem" :aria-label="msg('校标')" style="overflow: hidden; background: #fff; border: 1px solid var(--line)">
+        <div
+          class="school-emblem"
+          :aria-label="msg('校标')"
+          style="overflow: hidden; background: #fff; border: 1px solid var(--line)"
+        >
           <img
             :src="system.school.logo"
             :alt="system.school.name"
@@ -44,25 +48,33 @@ const user = computed(() => auth.currentUser)
     <div v-if="showAnnouncement && system.school.announcement" class="campus-announcement">
       <van-icon name="volume-o" size="16" />
       <p>{{ system.school.announcement }}</p>
-      <button class="campus-announcement-close" :aria-label="msg('关闭公告')" @click="showAnnouncement = false">×</button>
+      <button class="campus-announcement-close" :aria-label="msg('关闭公告')" @click="showAnnouncement = false">
+        ×
+      </button>
     </div>
 
     <div
       v-if="user"
       class="campus-user-banner"
-      style="margin-top: 12px; border-radius: 8px; border: 1px solid var(--line); padding: 10px 12px;"
+      style="margin-top: 12px; border-radius: 8px; border: 1px solid var(--line); padding: 10px 12px"
     >
       <div class="user-banner-info">
         <strong>
-          {{ user.name }}{{ user.role === 'teacher' ? msg(" 老师") : user.role === 'student' ? msg(" 同学") : '' }}
+          {{ user.name }}{{ user.role === 'teacher' ? msg(' 老师') : user.role === 'student' ? msg(' 同学') : '' }}
         </strong>
         <span>
           {{ user.department }} ·
-          {{ user.role === 'student' ? user.className : user.role === 'teacher' ? msg("工号 {p0}", { p0: user.account }) : msg("账号 {p0}", { p0: user.account }) }}
+          {{
+            user.role === 'student'
+              ? user.className
+              : user.role === 'teacher'
+                ? msg('工号 {p0}', { p0: user.account })
+                : msg('账号 {p0}', { p0: user.account })
+          }}
         </span>
       </div>
       <span class="user-role-badge">
-        {{ user.role === 'student' ? msg("在籍学生") : user.role === 'teacher' ? msg("教师身份") : msg("管理员") }}
+        {{ user.role === 'student' ? msg('在籍学生') : user.role === 'teacher' ? msg('教师身份') : msg('管理员') }}
       </span>
     </div>
   </header>

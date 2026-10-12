@@ -1,6 +1,9 @@
 import { msg, type MessageKey } from '@/mobile/i18n'
 
-export interface RetentionBlocker { code: string; count: number }
+export interface RetentionBlocker {
+  code: string
+  count: number
+}
 const blockerMessages: Record<string, MessageKey> = {
   RETENTION_TASK_OPEN: '任务尚未结项，不能删除。',
   RETENTION_SNAPSHOT_MISSING: '缺少结项快照，不能核定保存期限。',
@@ -19,7 +22,9 @@ export function retentionBlockers(blockers: readonly RetentionBlocker[]): Retent
 }
 
 export function retentionBlockerLabel(blocker: RetentionBlocker): string {
-  return msg(blockerMessages[blocker.code] ?? '仍有 {p0} 项删除阻碍，请刷新预览并联系管理员核查。', { p0: blocker.count })
+  return msg(blockerMessages[blocker.code] ?? '仍有 {p0} 项删除阻碍，请刷新预览并联系管理员核查。', {
+    p0: blocker.count
+  })
 }
 
 export function retentionStatus(item: { eligible: boolean; blockers: readonly RetentionBlocker[] }): string {

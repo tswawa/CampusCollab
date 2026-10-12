@@ -41,8 +41,9 @@ export class AppDatabase {
 
   migrate() {
     const migrationDir = path.resolve(projectRoot, 'server/db/migrations')
-    const files = fs.readdirSync(migrationDir)
-      .filter((file) => /^\d+_.+\.sql$/.test(file))
+    const files = fs
+      .readdirSync(migrationDir)
+      .filter(file => /^\d+_.+\.sql$/.test(file))
       .sort((a, b) => a.localeCompare(b))
     this.raw.exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
       version INTEGER PRIMARY KEY,
@@ -50,8 +51,7 @@ export class AppDatabase {
       applied_at TEXT NOT NULL
     ) STRICT;`)
     const applied = new Set(
-      (this.raw.prepare('SELECT version FROM schema_migrations').all() as SqlRow[])
-        .map((row) => Number(row.version))
+      (this.raw.prepare('SELECT version FROM schema_migrations').all() as SqlRow[]).map(row => Number(row.version))
     )
     for (const file of files) {
       const version = Number(file.split('_', 1)[0])
@@ -65,8 +65,10 @@ export class AppDatabase {
         this.transaction(() => {
           this.raw.exec(sql)
           if (version === 1) this.seedBaseData()
-          if (this.raw.prepare('PRAGMA foreign_key_check').all().length) throw new Error(`Migration ${file} violates foreign keys`)
-          this.raw.prepare('INSERT INTO schema_migrations(version, name, applied_at) VALUES (?, ?, ?)')
+          if (this.raw.prepare('PRAGMA foreign_key_check').all().length)
+            throw new Error(`Migration ${file} violates foreign keys`)
+          this.raw
+            .prepare('INSERT INTO schema_migrations(version, name, applied_at) VALUES (?, ?, ?)')
             .run(version, file, nowIso())
         })
       } finally {
@@ -82,7 +84,11 @@ export class AppDatabase {
       this.raw.exec('COMMIT')
       return result
     } catch (error) {
-      try { this.raw.exec('ROLLBACK') } catch { /* database already rolled back */ }
+      try {
+        this.raw.exec('ROLLBACK')
+      } catch {
+        /* database already rolled back */
+      }
       throw error
     }
   }
@@ -102,7 +108,11 @@ export class AppDatabase {
   close() {
     if (this.closed) return
     this.closed = true
-    try { this.raw.close() } finally { this.releaseLease() }
+    try {
+      this.raw.close()
+    } finally {
+      this.releaseLease()
+    }
   }
 
   private seedBaseData() {
@@ -116,8 +126,10 @@ export class AppDatabase {
       ['dept-admin', '信息化与教务管理中心', 'ADMIN']
     ]
     const grades = [
-      ['grade-2023', '2023级'], ['grade-2024', '2024级'],
-      ['grade-2025', '2025级'], ['grade-2026', '2026级']
+      ['grade-2023', '2023级'],
+      ['grade-2024', '2024级'],
+      ['grade-2025', '2025级'],
+      ['grade-2026', '2026级']
     ]
     const classes = [
       ['class-24cs1', '24计科1班', 'dept-cs', 'grade-2024'],
@@ -131,12 +143,16 @@ export class AppDatabase {
       ['class-24en1', '24英语1班', 'dept-fl', 'grade-2024']
     ]
     const campuses = [
-      ['campus-main', '主校区'], ['campus-east', '东校区'],
-      ['campus-west', '西校区'], ['campus-online', '线上协助']
+      ['campus-main', '主校区'],
+      ['campus-east', '东校区'],
+      ['campus-west', '西校区'],
+      ['campus-online', '线上协助']
     ]
     const categories = [
-      ['category-event', '活动协助'], ['category-place', '场地协助'],
-      ['category-document', '资料整理'], ['category-design', '设计制作'],
+      ['category-event', '活动协助'],
+      ['category-place', '场地协助'],
+      ['category-document', '资料整理'],
+      ['category-design', '设计制作'],
       ['category-device', '设备协助']
     ]
     const departmentStatement = this.raw.prepare(`INSERT OR IGNORE INTO departments
@@ -148,20 +164,30 @@ export class AppDatabase {
     const classStatement = this.raw.prepare(`INSERT OR IGNORE INTO classes
       (id, name, department_id, grade_id, enabled, version, created_at, updated_at)
       VALUES (?, ?, ?, ?, 1, 1, ?, ?)`)
-    classes.forEach(([id, name, departmentId, gradeId]) => classStatement.run(id, name, departmentId, gradeId, timestamp, timestamp))
+    classes.forEach(([id, name, departmentId, gradeId]) =>
+      classStatement.run(id, name, departmentId, gradeId, timestamp, timestamp)
+    )
     const campusStatement = this.raw.prepare(`INSERT OR IGNORE INTO campuses
       (id, name, enabled, version, created_at, updated_at) VALUES (?, ?, 1, 1, ?, ?)`)
     campuses.forEach(([id, name]) => campusStatement.run(id, name, timestamp, timestamp))
     const categoryStatement = this.raw.prepare(`INSERT OR IGNORE INTO task_categories
       (id, name, enabled, version, created_at, updated_at) VALUES (?, ?, 1, 1, ?, ?)`)
     categories.forEach(([id, name]) => categoryStatement.run(id, name, timestamp, timestamp))
-    this.raw.prepare(`INSERT OR IGNORE INTO school_settings
+    this.raw
+      .prepare(
+        `INSERT OR IGNORE INTO school_settings
       (id, name, platform_name, logo_file_id, logo_url, badge, announcement, primary_color, timezone, version, updated_at)
-      VALUES (1, ?, ?, NULL, ?, ?, ?, ?, ?, 1, ?)`)
+      VALUES (1, ?, ?, NULL, ?, ?, ?, ?, ?, 1, ?)`
+      )
       .run(
-        'XX大学', productNames['zh-CN'], '/brand.jpeg', '校内',
+        'XX大学',
+        productNames['zh-CN'],
+        '/brand.jpeg',
+        '校内',
         '本学期校内勤工助学、实验助理与教务协助任务通道已开放。',
-        '#1E60D5', this.config.timezone, timestamp
+        '#1E60D5',
+        this.config.timezone,
+        timestamp
       )
   }
 }

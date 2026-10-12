@@ -26,7 +26,10 @@ async function institutionAdminSession(browser: Browser, baseURL: string) {
     const authenticated = { context, session, baseURL }
     adminSessions.set(browser, authenticated)
     return authenticated
-  } catch (error) { await context.dispose(); throw error }
+  } catch (error) {
+    await context.dispose()
+    throw error
+  }
 }
 
 /** Test precondition only. Actual settings interaction is covered in admin-console.spec.ts. */

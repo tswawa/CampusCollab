@@ -11,7 +11,9 @@ import { createAdminManagedUser } from '../modules/accounts.service.js'
 
 function runScript(script: string, env: NodeJS.ProcessEnv, args: string[] = []) {
   const result = spawnSync(process.execPath, ['--import', 'tsx', script, ...args], {
-    cwd: process.cwd(), env: { ...process.env, ...env }, encoding: 'utf8'
+    cwd: process.cwd(),
+    env: { ...process.env, ...env },
+    encoding: 'utf8'
   })
   assert.equal(result.status, 0, `${script} 失败：${result.stderr || result.stdout}`)
   return result.stdout
@@ -24,9 +26,16 @@ test('pre-upgrade backup preserves an old database without applying newer migrat
   try {
     const legacy = new DatabaseSync(databasePath)
     legacy.exec(fs.readFileSync(path.resolve('server/db/migrations/001_initial.sql'), 'utf8'))
-    legacy.prepare('INSERT INTO schema_migrations(version,name,applied_at) VALUES(1,?,?)').run('001_initial.sql', nowIso())
+    legacy
+      .prepare('INSERT INTO schema_migrations(version,name,applied_at) VALUES(1,?,?)')
+      .run('001_initial.sql', nowIso())
     legacy.close()
-    runScript('server/scripts/backup.ts', { NODE_ENV: 'test', DATABASE_PATH: databasePath, UPLOAD_DIR: path.join(root, 'uploads'), BACKUP_DIR: backupDir })
+    runScript('server/scripts/backup.ts', {
+      NODE_ENV: 'test',
+      DATABASE_PATH: databasePath,
+      UPLOAD_DIR: path.join(root, 'uploads'),
+      BACKUP_DIR: backupDir
+    })
     const names = fs.readdirSync(backupDir)
     assert.equal(names.length, 1)
     for (const file of [databasePath, path.join(backupDir, names[0]!, 'campus.sqlite')]) {
@@ -34,9 +43,13 @@ test('pre-upgrade backup preserves an old database without applying newer migrat
       try {
         assert.equal(db.prepare('SELECT COUNT(*) count FROM schema_migrations').get()!.count, 1)
         assert.equal(db.prepare("SELECT name FROM sqlite_master WHERE name='workflow_tasks'").get(), undefined)
-      } finally { db.close() }
+      } finally {
+        db.close()
+      }
     }
-  } finally { fs.rmSync(root, { recursive: true, force: true }) }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true })
+  }
 })
 
 test('停服备份恢复同时覆盖数据库和上传目录，并使全部会话失效', async () => {
@@ -49,16 +62,27 @@ test('停服备份恢复同时覆盖数据库和上传目录，并使全部会�
     const db = new AppDatabase(loadConfig({ nodeEnv: 'test', databasePath, uploadDir, backupDir }))
     db.migrate()
     const admin = await createAdminManagedUser(db, {
-      role: 'admin', account: 'OPSADMIN', name: '运维管理员', departmentId: 'dept-admin', password: 'Admin@123', approval: 'approved'
+      role: 'admin',
+      account: 'OPSADMIN',
+      name: '运维管理员',
+      departmentId: 'dept-admin',
+      password: 'Admin@123',
+      approval: 'approved'
     })
-    db.run(`INSERT INTO sessions(token_hash, user_id, csrf_token, expires_at, created_at, updated_at)
-      VALUES ('ops-session', ?, 'ops-csrf', ?, ?, ?)`, admin.id, Date.now() + 60_000, nowIso(), nowIso())
+    db.run(
+      `INSERT INTO sessions(token_hash, user_id, csrf_token, expires_at, created_at, updated_at)
+      VALUES ('ops-session', ?, 'ops-csrf', ?, ?, ?)`,
+      admin.id,
+      Date.now() + 60_000,
+      nowIso(),
+      nowIso()
+    )
     db.close()
     fs.mkdirSync(uploadDir, { recursive: true })
     fs.writeFileSync(path.join(uploadDir, 'marker.txt'), 'original')
 
     runScript('server/scripts/backup.ts', env)
-    const backups = fs.readdirSync(backupDir, { withFileTypes: true }).filter((entry) => entry.isDirectory())
+    const backups = fs.readdirSync(backupDir, { withFileTypes: true }).filter(entry => entry.isDirectory())
     assert.equal(backups.length, 1)
     const backupPath = path.join(backupDir, backups[0].name)
     assert.ok(fs.existsSync(path.join(backupPath, 'manifest.json')))
@@ -69,13 +93,21 @@ test('停服备份恢复同时覆盖数据库和上传目录，并使全部会�
     mutated.run("UPDATE school_settings SET name = '被修改大学' WHERE id = 1")
     mutated.run('DELETE FROM sessions')
     mutated.run('DELETE FROM users')
-    const concurrentRestore = spawnSync(process.execPath, ['--import', 'tsx', 'server/scripts/restore.ts', backupPath], {
-      cwd: process.cwd(), env: { ...process.env, ...env }, encoding: 'utf8'
-    })
+    const concurrentRestore = spawnSync(
+      process.execPath,
+      ['--import', 'tsx', 'server/scripts/restore.ts', backupPath],
+      {
+        cwd: process.cwd(),
+        env: { ...process.env, ...env },
+        encoding: 'utf8'
+      }
+    )
     assert.notEqual(concurrentRestore.status, 0)
     assert.match(concurrentRestore.stderr, /数据库正在使用/)
     const concurrentBackup = spawnSync(process.execPath, ['--import', 'tsx', 'server/scripts/backup.ts'], {
-      cwd: process.cwd(), env: { ...process.env, ...env }, encoding: 'utf8'
+      cwd: process.cwd(),
+      env: { ...process.env, ...env },
+      encoding: 'utf8'
     })
     assert.notEqual(concurrentBackup.status, 0)
     assert.match(concurrentBackup.stderr, /数据库正在使用/)

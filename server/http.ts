@@ -13,7 +13,9 @@ export const FailureSchema = Type.Object({
   ok: Type.Literal(false),
   message: Type.String(),
   code: Type.String(),
-  params: Type.Optional(Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), Type.Boolean(), Type.Null()])))
+  params: Type.Optional(
+    Type.Record(Type.String(), Type.Union([Type.String(), Type.Number(), Type.Boolean(), Type.Null()]))
+  )
 })
 
 export const DefaultResponseSchema = {
@@ -30,4 +32,7 @@ export function pageNumber(value: unknown, fallback: number, max = Number.MAX_SA
   return Number.isInteger(parsed) && parsed > 0 ? Math.min(parsed, max) : fallback
 }
 
-export const IdParamsSchema = Type.Object({ id: Type.String({ minLength: 1, maxLength: 100 }) }, { additionalProperties: false })
+export const IdParamsSchema = Type.Object(
+  { id: Type.String({ minLength: 1, maxLength: 100 }) },
+  { additionalProperties: false }
+)

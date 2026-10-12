@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-server
+data
+coverage
+test-results
+playwright-report
+.local
+docs
+public
+LICENSES
+package-lock.json
+*.md
+*.json
