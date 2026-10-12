@@ -8,6 +8,7 @@ import { useLoad, useMutation } from '@/mobile/api/ui'
 import { useAuthStore } from '@/mobile/stores/auth'
 import { useTaskStore } from '@/mobile/stores/tasks'
 import { formatDate, formatTimestamp, instantToLocalInput, zonedLocalToInstant } from '@/mobile/utils/date'
+import { completionExportFilename } from '@/mobile/utils/task'
 import { mapRosterRows, parseRosterCsv } from '@/mobile/utils/roster'
 import { reviewInBatches } from '@/mobile/utils/review-batches'
 import LoadState from '@/mobile/components/LoadState.vue'
@@ -740,6 +741,9 @@ async function inspectSnapshot(id: string) {
   )
 }
 async function download(id: string, format: 'csv' | 'xlsx' | 'zip') {
+  const resultSnapshot = workflow.value?.snapshots.find(item => item.id === id)
+  if (!task.value || !resultSnapshot) return
+  const filename = completionExportFilename(task.value.title, resultSnapshot.version, format, locale.value)
   await run(
     signal =>
       requestBlob(`${base.value}/snapshots/${encodeURIComponent(id)}/export`, {
@@ -751,7 +755,7 @@ async function download(id: string, format: 'csv' | 'xlsx' | 'zip') {
       const url = URL.createObjectURL(blob)
       const anchor = document.createElement('a')
       anchor.href = url
-      anchor.download = `completion-${id}.${format}`
+      anchor.download = filename
       anchor.click()
       window.setTimeout(() => URL.revokeObjectURL(url), 1000)
     }

@@ -13,7 +13,10 @@ import {
   closeoutWorkflow,
   getTaskWorkflow,
   handoverWorkflow,
+  importRoster,
+  previewRosterImport,
   reviewWorkflowRevision,
+  setParticipantOutcome,
   submitWorkflowRevision
 } from '../modules/workflow.service.js'
 import { closeTestApp, createAdmin, createTestApp, dataOf, login, testOrigin } from './helpers.js'
@@ -60,7 +63,7 @@ test('real uploaded evidence survives correction cleanup, exports only the appro
       signupDeadline: '2098-10-09 10:00',
       place: 'Campus garden',
       duration: '120 planned minutes',
-      capacity: 1,
+      capacity: 2,
       audienceScope: 'school',
       requirements: [],
       proofTypes: ['image', 'text'],
@@ -156,7 +159,18 @@ test('real uploaded evidence survives correction cleanup, exports only the appro
       (await ctx.app.inject({ method: 'GET', url: old.url, headers: { cookie: coordinator.cookie } })).statusCode,
       200
     )
-    const workflow = getTaskWorkflow(ctx.db, teacher, task.id)
+    const input = { source: 'import', rows: [{ externalId: '0009', name: 'Imported participant' }] }
+    const imported = importRoster(ctx.db, teacher, task.id, {
+      ...input,
+      hash: previewRosterImport(ctx.db, teacher, task.id, input).hash,
+      idempotencyKey: 'export-import'
+    }).participants.find(person => person.userId === null)!
+    const workflow = setParticipantOutcome(ctx.db, teacher, task.id, {
+      participantId: imported.id,
+      version: imported.version,
+      status: 'incomplete',
+      reason: 'Did not attend'
+    })
     const snapshot = closeoutWorkflow(ctx.db, teacher, task.id, {
       version: workflow.config.version,
       reason: 'All outcomes checked'
@@ -178,6 +192,19 @@ test('real uploaded evidence survives correction cleanup, exports only the appro
     const expected = await ctx.app.inject({ method: 'GET', url: current.url, headers: { cookie: coordinator.cookie } })
     assert.deepEqual(Buffer.from(entries[images[0]!]!), expected.rawPayload)
     assert.equal(JSON.parse(strFromU8(entries['manifest.json']!)).totals.confirmedMinutes, 90)
+    const csv = Buffer.from(entries['participants.csv']!).toString('utf8').split('\r\n')
+    assert.equal(
+      csv[0],
+      '\uFEFF"姓名","学号/工号","外部编号","部门","分组","名单来源","结果","确认分钟数","材料路径","参与记录 ID","确认个人版本","确认公共版本"'
+    )
+    const linkedRow = csv.find(row => row.startsWith(`"${student.name}",`))!.split(',')
+    assert.equal(linkedRow[1], `"${student.account}"`)
+    assert.equal(linkedRow[5], '"账号报名"')
+    assert.equal(linkedRow[9], `"${person.id}"`)
+    const importedRow = csv.find(row => row.startsWith(`"${imported.name}",`))!.split(',')
+    assert.equal(importedRow[1], '""')
+    assert.equal(importedRow[2], '"0009"')
+    assert.equal(importedRow[5], '"名单导入"')
     handoverWorkflow(ctx.db, admin, task.id, {
       ownerId: replacement.id,
       version: getTaskForViewer(ctx.db, task.id, teacher).version,

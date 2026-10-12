@@ -4,7 +4,7 @@ import { afterEach, test } from 'node:test'
 import { computed } from 'vue'
 import { applyDefaultLocale, english, locale, msg, resourceKeys, setLocale } from './index'
 import { instantToLocalInput, setSchoolTimezone, zonedLocalToInstant, formatTimestamp } from '../utils/date'
-import { formatTaskDuration, memberStatusMeta, proofTypeLabels } from '../utils/task'
+import { completionExportFilename, formatTaskDuration, memberStatusMeta, proofTypeLabels } from '../utils/task'
 afterEach(() => {
   setLocale('zh-CN', false)
   setSchoolTimezone('Asia/Shanghai')
@@ -34,6 +34,19 @@ test('task durations format whole hours, fractional hours and minutes in both la
     setLocale(language, false)
     for (const duration of durations) {
       assert.equal(formatTaskDuration(duration.minutes), language === 'en' ? duration.en : duration.zh)
+    }
+  }
+})
+test('completion filenames remove unsafe characters, limit the title and preserve the edition and extension', () => {
+  const title = 'Garden\\/:*?"<>|\u0000\n\u007f\u0085' + '花🌱'.repeat(40)
+  const safeTitle = 'Garden' + '花🌱'.repeat(27)
+  for (const language of ['zh-CN', 'en'] as const) {
+    applyDefaultLocale(language)
+    for (const format of ['csv', 'xlsx', 'zip'] as const) {
+      assert.equal(
+        completionExportFilename(title, 7, format, locale.value),
+        `${safeTitle}_${language === 'en' ? 'result-v' : '结果版本'}7.${format}`
+      )
     }
   }
 })

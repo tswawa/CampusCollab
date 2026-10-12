@@ -5,8 +5,10 @@ import ExcelJS from 'exceljs'
 import { unzipSync, strFromU8 } from 'fflate'
 import type { WorkflowParticipant, WorkflowSnapshot, ProofRevision } from '../../shared/workflow-contracts.js'
 import { getEvidenceTemplate } from '../../shared/templates.js'
+import { seedWorkflowDemo } from '../demo/workflow-seed.js'
+import { createAdminManagedUser } from '../modules/accounts.service.js'
 import { buildCompletionExport, csvCell } from '../modules/completion-export.js'
-import { closeTestApp, createTestApp } from './helpers.js'
+import { closeTestApp, createTestApp, login } from './helpers.js'
 
 const revision = (id: string, description: string): ProofRevision => ({
   id,
@@ -92,6 +94,19 @@ test('completion package preserves all eight people, only approved revisions and
   const context = await createTestApp()
   try {
     const snapshot = fixture()
+    const student = await createAdminManagedUser(context.db, {
+      role: 'student',
+      account: '00001234',
+      name: 'Linked participant',
+      departmentId: 'dept-cs',
+      gradeId: 'grade-2024',
+      classId: 'class-24se1',
+      approval: 'approved',
+      password: 'Campus@123'
+    })
+    snapshot.participants[0]!.userId = student.id
+    snapshot.participants[0]!.source = 'account'
+    snapshot.participants[1]!.source = 'import'
     const result = await buildCompletionExport(context.db, snapshot, 'en', 'zip')
     const entries = unzipSync(result.data)
     const manifest = JSON.parse(strFromU8(entries['manifest.json']!))
@@ -111,10 +126,33 @@ test('completion package preserves all eight people, only approved revisions and
     )
     const sheet = workbook.getWorksheet('Participants')!
     assert.equal(sheet.rowCount, 9)
-    assert.equal(sheet.getCell('B2').value, '0001')
+    assert.deepEqual(sheet.getRow(1).values, [
+      ,
+      'Name',
+      'Account',
+      'External ID',
+      'Department',
+      'Group',
+      'Roster source',
+      'Outcome',
+      'Confirmed minutes',
+      'Evidence paths',
+      'Participant ID',
+      'Approved personal revision',
+      'Approved shared revision'
+    ])
+    assert.equal(sheet.getCell('A2').type, ExcelJS.ValueType.String)
+    assert.equal(sheet.getCell('A2').value, snapshot.participants[0]!.name)
+    assert.equal(sheet.getCell('B2').value, student.account)
     assert.equal(sheet.getCell('B2').type, ExcelJS.ValueType.String)
+    assert.equal(sheet.getCell('B3').value, '')
+    assert.equal(sheet.getCell('C2').value, '0001')
     assert.equal(sheet.getCell('C2').type, ExcelJS.ValueType.String)
-    assert.equal(sheet.getCell('C2').value, snapshot.participants[0]!.name)
+    assert.equal(sheet.getCell('F2').value, 'Account sign-up')
+    assert.equal(sheet.getCell('F3').value, 'Imported roster')
+    assert.equal(sheet.getCell('I2').value, evidence[0])
+    assert.equal(sheet.getCell('J2').value, snapshot.participants[0]!.id)
+    assert.equal(sheet.getCell('K2').value, snapshot.participants[0]!.confirmedRevisionId)
     assert.equal(sheet.getCell('H8').value, '')
     assert.equal(workbook.getWorksheet('Package')!.getCell('B8').value, 525)
     const csv = strFromU8(entries['participants.csv']!)
@@ -135,6 +173,8 @@ test('shared evidence is stored once and linked to each confirmed participant; m
     snapshot.participants.slice(0, 6).forEach(person => {
       person.commonRevisionId = 'shared_revision'
     })
+    snapshot.participants[0]!.source = 'account'
+    snapshot.participants[1]!.source = 'import'
     const result = await buildCompletionExport(context.db, snapshot, 'zh-CN', 'zip')
     const entries = unzipSync(result.data)
     assert.equal(Object.keys(entries).filter(name => name.includes('/shared/')).length, 1)
@@ -142,8 +182,61 @@ test('shared evidence is stored once and linked to each confirmed participant; m
       strFromU8(entries['participants.csv']!).split('evidence/shared/shared_revision/record.txt').length - 1,
       6
     )
+    const workbook = new ExcelJS.Workbook()
+    await workbook.xlsx.load(
+      Buffer.from(entries['participants.xlsx']!) as unknown as Parameters<typeof workbook.xlsx.load>[0]
+    )
+    assert.equal(workbook.getWorksheet('参与名单')!.getCell('F2').value, '账号报名')
+    assert.equal(workbook.getWorksheet('参与名单')!.getCell('F3').value, '名单导入')
+    assert.deepEqual(workbook.getWorksheet('结果包')!.getColumn(1).values, [
+      ,
+      '结果版本 ID',
+      '版本',
+      '取代的版本',
+      '任务',
+      '创建时间',
+      '参与人数',
+      '已确认人数',
+      '确认分钟数',
+      '模板',
+      '模板版本'
+    ])
     snapshot.participants[0]!.confirmedRevisionId = 'missing_revision'
     await assert.rejects(buildCompletionExport(context.db, snapshot, 'en', 'zip'), { code: 'EXPORT_REVISION_MISSING' })
+  } finally {
+    await closeTestApp(context)
+  }
+})
+
+test('completion export headers include an ASCII fallback and a localized task-title filename', async () => {
+  const context = await createTestApp()
+  try {
+    const teacher = await createAdminManagedUser(context.db, {
+      role: 'teacher',
+      account: 'EXPORTTEACH',
+      name: 'Export coordinator',
+      departmentId: 'dept-cs',
+      approval: 'approved',
+      password: 'Campus@123'
+    })
+    const { taskId, snapshot } = seedWorkflowDemo(context.db, teacher)
+    const session = await login(context, teacher.account, 'Campus@123')
+    for (const locale of ['zh-CN', 'en'] as const) {
+      context.db.run('UPDATE school_settings SET default_locale = ? WHERE id = 1', locale)
+      const response = await context.app.inject({
+        method: 'GET',
+        url: `/api/tasks/${taskId}/workflow/snapshots/${snapshot.id}/export?format=csv`,
+        headers: { cookie: session.cookie }
+      })
+      assert.equal(response.statusCode, 200, response.body)
+      const disposition = String(response.headers['content-disposition'])
+      assert.ok(disposition.includes(`filename="completion-${snapshot.id}-v${snapshot.version}.csv"`))
+      assert.ok(disposition.includes("filename*=UTF-8''"))
+      assert.equal(
+        decodeURIComponent(disposition.split("filename*=UTF-8''")[1]!),
+        `${snapshot.task.title}_${locale === 'en' ? 'result-v' : '结果版本'}${snapshot.version}.csv`
+      )
+    }
   } finally {
     await closeTestApp(context)
   }

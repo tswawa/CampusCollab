@@ -17,30 +17,32 @@ import { productNames } from '../../shared/brand.js'
 
 const labels = {
   'zh-CN': [
-    '参与记录 ID',
-    '外部编号',
     '姓名',
-    '名单来源',
+    '学号/工号',
+    '外部编号',
     '部门',
     '分组',
+    '名单来源',
     '结果',
     '确认分钟数',
+    '材料路径',
+    '参与记录 ID',
     '确认个人版本',
-    '确认公共版本',
-    '材料路径'
+    '确认公共版本'
   ],
   en: [
-    'Participant ID',
-    'External ID',
     'Name',
-    'Roster source',
+    'Account',
+    'External ID',
     'Department',
     'Group',
+    'Roster source',
     'Outcome',
     'Confirmed minutes',
+    'Evidence paths',
+    'Participant ID',
     'Approved personal revision',
-    'Approved shared revision',
-    'Evidence paths'
+    'Approved shared revision'
   ]
 }
 const outcomes: Record<string, Record<AppLocale, string>> = {
@@ -49,6 +51,36 @@ const outcomes: Record<string, Record<AppLocale, string>> = {
   withdrawn: { 'zh-CN': '已退出', en: 'Withdrawn' },
   rejected: { 'zh-CN': '已拒绝', en: 'Rejected' },
   cancelled: { 'zh-CN': '已取消', en: 'Cancelled' }
+}
+const rosterSources: Record<string, Record<AppLocale, string>> = {
+  account: { 'zh-CN': '账号报名', en: 'Account sign-up' },
+  import: { 'zh-CN': '名单导入', en: 'Imported roster' }
+}
+const metadataLabels = {
+  'zh-CN': {
+    snapshot: '结果版本 ID',
+    version: '版本',
+    supersedes: '取代的版本',
+    task: '任务',
+    created: '创建时间',
+    participants: '参与人数',
+    confirmed: '已确认人数',
+    confirmedMinutes: '确认分钟数',
+    template: '模板',
+    templateVersion: '模板版本'
+  },
+  en: {
+    snapshot: 'Snapshot',
+    version: 'Version',
+    supersedes: 'Supersedes',
+    task: 'Task',
+    created: 'Created',
+    participants: 'Participants',
+    confirmed: 'Confirmed',
+    confirmedMinutes: 'Confirmed minutes',
+    template: 'Template',
+    templateVersion: 'Template version'
+  }
 }
 const maxBytes = 50 * 1024 * 1024
 const safeId = (id: string) => {
@@ -143,21 +175,22 @@ export async function buildCompletionExport(
     pathsByRevision.set(revision.id, paths)
   }
   const rows = snapshot.participants.map((person): Array<string | number> => [
-    person.id,
-    person.externalId ?? '',
     person.name,
-    person.source,
+    person.userId ? String(db.get('SELECT account FROM users WHERE id = ?', person.userId)?.account ?? '') : '',
+    person.externalId ?? '',
     person.department,
     person.className,
+    rosterSources[person.source]?.[locale] ?? person.source,
     outcomes[person.status]?.[locale] ?? person.status,
     person.status === 'completed' ? (person.confirmedMinutes ?? '') : '',
-    person.status === 'completed' ? (person.confirmedRevisionId ?? '') : '',
-    person.status === 'completed' ? (person.commonRevisionId ?? '') : '',
     person.status === 'completed'
       ? [person.confirmedRevisionId, person.commonRevisionId]
           .flatMap(id => (id ? (pathsByRevision.get(id) ?? []) : []))
           .join('\n')
-      : ''
+      : '',
+    person.id,
+    person.status === 'completed' ? (person.confirmedRevisionId ?? '') : '',
+    person.status === 'completed' ? (person.commonRevisionId ?? '') : ''
   ])
   const csv = Buffer.from(
     '\uFEFF' + [labels[locale], ...rows].map(row => row.map(csvCell).join(',')).join('\r\n') + '\r\n',
@@ -179,7 +212,7 @@ export async function buildCompletionExport(
     to: { row: Math.max(1, rows.length + 1), column: labels[locale].length }
   }
   sheet.columns.forEach((column, index) => {
-    column.width = index === 10 ? 65 : 24
+    column.width = index === 8 ? 65 : 24
     if (index !== 7) column.numFmt = '@'
   })
   sheet.getColumn(8).numFmt = '0'
@@ -187,17 +220,18 @@ export async function buildCompletionExport(
     row.alignment = { vertical: 'top', wrapText: true }
   })
   const metadata = workbook.addWorksheet(locale === 'en' ? 'Package' : '结果包')
+  const meta = metadataLabels[locale]
   metadata.addRows([
-    ['Snapshot', snapshot.id],
-    ['Version', snapshot.version],
-    ['Supersedes', snapshot.supersedesId ?? ''],
-    ['Task', snapshot.task.title],
-    ['Created', snapshot.createdAt],
-    ['Participants', snapshot.totals.participants],
-    ['Confirmed', snapshot.totals.completed],
-    ['Confirmed minutes', snapshot.totals.confirmedMinutes],
-    ['Template', snapshot.config.templateId],
-    ['Template version', snapshot.config.templateVersion]
+    [meta.snapshot, snapshot.id],
+    [meta.version, snapshot.version],
+    [meta.supersedes, snapshot.supersedesId ?? ''],
+    [meta.task, snapshot.task.title],
+    [meta.created, snapshot.createdAt],
+    [meta.participants, snapshot.totals.participants],
+    [meta.confirmed, snapshot.totals.completed],
+    [meta.confirmedMinutes, snapshot.totals.confirmedMinutes],
+    [meta.template, snapshot.config.templateId],
+    [meta.templateVersion, snapshot.config.templateVersion]
   ])
   metadata.columns.forEach(column => {
     column.width = 45
@@ -274,12 +308,20 @@ export function registerCompletionExportRoutes(app: FastifyInstance, db: AppData
       // Export generation yields for IO; recheck authority before releasing private data.
       getWorkflowSnapshot(db, sessions.requireUser(request, ['teacher', 'admin']), id, snapshotId)
       audit(db, actor.id, 'workflow.export', 'task', id, { snapshotId, format, locale })
+      const title = Array.from(snapshot.task.title.replace(/[\\/:*?"<>|\u0000-\u001f\u007f-\u009f]/g, ''))
+        .slice(0, 60)
+        .join('')
+      const filename = `${title}_${locale === 'en' ? 'result-v' : '结果版本'}${snapshot.version}.${format}`
+      const encodedFilename = encodeURIComponent(filename).replace(
+        /[!'()*]/g,
+        character => `%${character.charCodeAt(0).toString(16).toUpperCase()}`
+      )
       return reply
         .header('Content-Type', result.mime)
         .header('Content-Language', locale)
         .header(
           'Content-Disposition',
-          `attachment; filename="completion-${safeId(snapshot.id)}-v${snapshot.version}.${format}"`
+          `attachment; filename="completion-${safeId(snapshot.id)}-v${snapshot.version}.${format}"; filename*=UTF-8''${encodedFilename}`
         )
         .header('Cache-Control', 'private, no-store')
         .header('X-Content-Type-Options', 'nosniff')

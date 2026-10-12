@@ -1,4 +1,5 @@
 import type {
+  AppLocale,
   CampusTask,
   CampusUser,
   ContactMethodType,
@@ -165,6 +166,18 @@ export const proofTypeLabels: Record<ProofType, string> = {
   get onsite() {
     return msg('现场核验')
   }
+}
+
+export function completionExportFilename(
+  title: string,
+  version: number,
+  format: 'csv' | 'xlsx' | 'zip',
+  locale: AppLocale
+): string {
+  const safeTitle = Array.from(title.replace(/[\\/:*?"<>|\u0000-\u001f\u007f-\u009f]/g, ''))
+    .slice(0, 60)
+    .join('')
+  return `${safeTitle}_${locale === 'en' ? 'result-v' : '结果版本'}${version}.${format}`
 }
 
 export function fullTaskTime(task: CampusTask): string {
