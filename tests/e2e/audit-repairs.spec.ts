@@ -245,7 +245,7 @@ for (const language of ['zh-CN', 'en'] as const) {
         .click()
       await expect(studentPage.locator('.proof-img-thumb img')).toHaveCount(1)
       await studentPage.getByRole('button', { name: label('提交完成凭证', 'Submit evidence'), exact: true }).click()
-      await expect(studentPage).toHaveURL(new RegExp(`${flowPath(target.id)}$`))
+      await expect(studentPage).toHaveURL(new RegExp(`/tasks/${target.id}$`))
       person = (await flow(target.id)).participants[0]!
       expect(person.revisions).toHaveLength(2)
       expect(person.revisions[1]!.fileIds).toEqual([file.id])

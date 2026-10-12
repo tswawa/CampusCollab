@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { msg } from '@/mobile/i18n'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/mobile/stores/auth'
 import { useTaskStore } from '@/mobile/stores/tasks'
@@ -14,6 +14,14 @@ const system = useSystemStore()
 const showAnnouncement = ref(true)
 const unread = computed(() => (auth.currentUser ? taskStore.unreadCount : 0))
 const user = computed(() => auth.currentUser)
+const institutionInitial = computed(() => Array.from(system.school.name.trim())[0]?.toLocaleUpperCase() ?? '·')
+const logoFailed = ref(false)
+watch(
+  () => system.school.logo,
+  () => {
+    logoFailed.value = false
+  }
+)
 </script>
 
 <template>
@@ -26,10 +34,13 @@ const user = computed(() => auth.currentUser)
           style="overflow: hidden; background: #fff; border: 1px solid var(--line)"
         >
           <img
+            v-if="system.school.logo && !logoFailed"
             :src="system.school.logo"
             :alt="system.school.name"
             style="width: 100%; height: 100%; object-fit: contain; border-radius: 6px"
+            @error="logoFailed = true"
           />
+          <span v-else style="color: var(--brand); font-weight: 700" aria-hidden="true">{{ institutionInitial }}</span>
         </div>
         <div class="school-meta">
           <h1>{{ system.school.name }}</h1>

@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { msg } from '@/mobile/i18n'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { showToast } from 'vant'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/mobile/stores/auth'
 import { useTaskStore } from '@/mobile/stores/tasks'
 import { useLoad, useMutation, usePagination } from '@/mobile/api/ui'
 import { useEvidencePreview } from '@/mobile/composables/useEvidencePreview'
+import { formatTimestamp, zonedLocalToInstant } from '@/mobile/utils/date'
+import type { ReviewItem } from '@/mobile/types'
 import LoadState from '@/mobile/components/LoadState.vue'
 import PaginationBar from '@/mobile/components/PaginationBar.vue'
 
@@ -28,6 +30,26 @@ const { busy, run } = useMutation()
 
 const feedbackMap = ref<Record<string, string>>({})
 const minutesMap = ref<Record<string, number | ''>>({})
+watch(
+  pendingSubmissions,
+  items => {
+    for (const sub of items) {
+      const key = `${sub.task.id}-${sub.member.userId}`
+      if (minutesMap.value[key] === undefined || minutesMap.value[key] === '')
+        minutesMap.value[key] = sub.reportedMinutes ?? sub.plannedMinutes ?? ''
+    }
+  },
+  { immediate: true }
+)
+
+function submittedBeforeStart(sub: ReviewItem) {
+  try {
+    const start = zonedLocalToInstant(`${sub.task.date}T${sub.task.startTime}`, auth.timezone)
+    return start !== null && Date.parse(sub.proof.submittedAt) < Date.parse(start)
+  } catch {
+    return false
+  }
+}
 
 // 教师底部只用退回 / 通过，完成后只提示已退回或已通过
 function handleApprove(taskId: string, userId: string) {
@@ -98,7 +120,20 @@ function handleReject(taskId: string, userId: string) {
               {{ msg('备注：{p0}', { p0: sub.proof.note }) }}
             </div>
             <div style="margin-top: 4px; font-size: 14px; color: var(--muted)">
-              {{ msg('提交时间：{p0}', { p0: sub.proof.submittedAt }) }}
+              {{ msg('提交时间：{p0}', { p0: formatTimestamp(sub.proof.submittedAt) }) }}
+            </div>
+            <div
+              v-if="sub.reportedMinutes !== null || sub.plannedMinutes !== null"
+              style="margin-top: 4px; font-size: 14px; color: var(--muted)"
+            >
+              <span v-if="sub.reportedMinutes !== null">{{
+                msg('学生自报 {p0} 分钟', { p0: sub.reportedMinutes })
+              }}</span>
+              <span v-if="sub.reportedMinutes !== null && sub.plannedMinutes !== null"> · </span>
+              <span v-if="sub.plannedMinutes !== null">{{ msg('计划 {p0} 分钟', { p0: sub.plannedMinutes }) }}</span>
+            </div>
+            <div v-if="submittedBeforeStart(sub)" style="margin-top: 4px; font-size: 14px; color: var(--danger)">
+              {{ msg('提交时间早于任务开始时间') }}
             </div>
           </div>
 

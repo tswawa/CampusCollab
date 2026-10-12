@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { msg } from '@/mobile/i18n'
 import { computed, onBeforeUnmount, ref } from 'vue'
-import { showToast } from 'vant'
+import { showConfirmDialog, showToast } from 'vant'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/mobile/stores/auth'
 import { useTaskStore } from '@/mobile/stores/tasks'
@@ -21,6 +21,7 @@ const task = computed(() => taskStore.taskById(String(route.params.id)))
 const member = computed(() => (task.value ? memberOf(task.value, auth.currentUserId) : undefined))
 const description = ref('')
 const note = ref('')
+const initialText = ref({ description: '', note: '' })
 const version = ref(0)
 const workflowParticipant = ref<WorkflowParticipant>()
 const reportedMinutes = ref<number | ''>('')
@@ -59,6 +60,7 @@ const { loading, error, ready, reload } = useLoad(
       const proof = revision ?? member.value?.proof
       description.value = proof?.description ?? ''
       note.value = proof?.note ?? ''
+      initialText.value = { description: description.value, note: note.value }
       images.value = (proof?.fileIds ?? []).map((fileId, index) => ({
         id: fileId,
         url: proof?.images[index] ?? '',
@@ -144,6 +146,24 @@ onBeforeUnmount(() => {
     if (image.localUrl) URL.revokeObjectURL(image.localUrl)
   })
 })
+async function goBack() {
+  if (
+    description.value !== initialText.value.description ||
+    note.value !== initialText.value.note ||
+    images.value.some(image => image.file)
+  ) {
+    try {
+      await showConfirmDialog({
+        message: msg('离开后，本页填写的内容不会保存。确定离开吗？'),
+        confirmButtonText: msg('离开'),
+        cancelButtonText: msg('继续填写')
+      })
+    } catch {
+      return
+    }
+  }
+  router.back()
+}
 async function submit() {
   if (submitting.value || uploading.value || !task.value || !member.value || !canSubmit.value) return
   if (description.value.trim().length < 6) {
@@ -177,9 +197,9 @@ async function submit() {
         }
       }),
     () => {
-      void router.replace(`/tasks/${id}/workflow`)
+      void router.replace(`/tasks/${id}`)
     },
-    msg('已提交')
+    msg('已提交，等待老师验收')
   )
 }
 </script>
@@ -302,8 +322,8 @@ async function submit() {
           block
           :disabled="submitting || uploading"
           style="height: 48px; border-radius: 8px; font-weight: 600"
-          @click="router.back()"
-          >{{ msg('稍后提交') }}</van-button
+          @click="goBack"
+          >{{ msg('返回') }}</van-button
         >
         <van-button
           type="primary"

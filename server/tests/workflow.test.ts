@@ -99,6 +99,32 @@ function file(ctx: Awaited<ReturnType<typeof fixture>>, owner: CampusUser, taskI
   return id
 }
 
+test('personal workflow submission requires photo evidence when the task requires images', async () => {
+  const ctx = await fixture()
+  try {
+    const { db, teacher, student } = ctx
+    const task = updateTask(db, teacher, ctx.task.id, {
+      version: ctx.task.version,
+      proofTypes: ['image', 'text']
+    })
+    claimTask(db, student, task.id)
+    const own = getTaskWorkflow(db, student, task.id).participants[0]
+    assert.throws(
+      () =>
+        submitWorkflowRevision(db, student, task.id, {
+          participantId: own.id,
+          version: own.version,
+          description: 'Completed the work without photo evidence',
+          note: '',
+          fileIds: []
+        }),
+      { statusCode: 400, code: 'PROOF_IMAGE_REQUIRED' }
+    )
+  } finally {
+    await closeTestApp(ctx)
+  }
+})
+
 test('roster preview preserves text IDs; conflict and replay create no accounts; binding is explicit and audited', async () => {
   const ctx = await fixture()
   try {

@@ -80,11 +80,13 @@ function reviewPage(
   )
   const rows = db.all(
     `SELECT tm.*, u.account, u.name, d.name department_name, c.name class_name,
-      p.submitted_at proof_submitted_at
+      p.submitted_at proof_submitted_at, wp.reported_minutes, wt.planned_minutes
     FROM task_members tm JOIN tasks t ON t.id = tm.task_id
     JOIN proofs p ON p.task_id = tm.task_id AND p.user_id = tm.user_id
     JOIN users u ON u.id = tm.user_id LEFT JOIN departments d ON d.id = u.department_id
     LEFT JOIN classes c ON c.id = u.class_id
+    LEFT JOIN workflow_participants wp ON wp.task_id = tm.task_id AND wp.user_id = tm.user_id
+    LEFT JOIN workflow_tasks wt ON wt.task_id = tm.task_id
     WHERE ${where} ORDER BY p.submitted_at DESC, tm.task_id, tm.user_id LIMIT ? OFFSET ?`,
     ...params,
     pageSize,
@@ -95,7 +97,13 @@ function reviewPage(
     assertCondition(taskRow, 404, 'TASK_NOT_FOUND', '待验收任务不存在')
     const member = mapMember(db, memberRow)
     assertCondition(member.proof, 409, 'PROOF_NOT_FOUND', '待验收凭证不存在')
-    return { task: mapTaskForViewer(db, taskRow, viewer), member, proof: member.proof }
+    return {
+      task: mapTaskForViewer(db, taskRow, viewer),
+      member,
+      proof: member.proof,
+      reportedMinutes: memberRow.reported_minutes === null ? null : number(memberRow.reported_minutes),
+      plannedMinutes: memberRow.planned_minutes === null ? null : number(memberRow.planned_minutes)
+    }
   })
   return { items, total, page, pageSize }
 }

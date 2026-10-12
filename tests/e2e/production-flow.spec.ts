@@ -109,7 +109,7 @@ test('生产构建在独立会话完成真实任务闭环、冲突保护和账�
     await student.page.getByLabel('完成说明').fill('已完成设备编号核对、异常登记和现场交接。')
     await student.page.getByLabel('补充备注').fill('生产端真实图片上传')
     await student.page.getByRole('button', { name: '提交完成凭证' }).click()
-    await expect(student.page).toHaveURL(new RegExp(`/tasks/${taskId}/workflow$`))
+    await expect(student.page).toHaveURL(new RegExp(`/tasks/${taskId}$`))
     await student.page.goto(`/tasks/${taskId}`)
     await expect(student.page.getByText('待老师验收')).toBeVisible()
 
@@ -127,7 +127,7 @@ test('生产构建在独立会话完成真实任务闭环、冲突保护和账�
     await expect(student.page.locator('.proof-img-thumb img')).toHaveCount(1)
     await student.page.getByLabel('完成说明').fill('共核对 36 台设备，2 台标签磨损已登记并移交管理员处理。')
     await student.page.getByRole('button', { name: '提交完成凭证' }).click()
-    await expect(student.page).toHaveURL(new RegExp(`/tasks/${taskId}/workflow$`))
+    await expect(student.page).toHaveURL(new RegExp(`/tasks/${taskId}$`))
 
     await teacher.page.goto(`/teacher/review?task=${taskId}`)
     const finalReview = teacher.page.locator('.review-item-card').filter({ hasText: title })

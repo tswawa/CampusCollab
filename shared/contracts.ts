@@ -194,6 +194,8 @@ export interface ReviewItem {
   task: CampusTask
   member: TaskMember
   proof: TaskProof
+  reportedMinutes: number | null
+  plannedMinutes: number | null
 }
 export interface DashboardData {
   stats: Record<string, number>
