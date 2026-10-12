@@ -1,12 +1,12 @@
 # CampusCollab 文档
 
-[项目首页](../README.zh-CN.md) · [English README](../README.md)
+[项目首页](../README.md) · [English README](../README.en.md)
 
 ## 使用与部署
 
 | 内容 | 简体中文 | English |
 | --- | --- | --- |
-| 功能、截图与本地运行 | [项目首页](../README.zh-CN.md) | [Overview and local setup](../README.md) |
+| 功能、截图与本地运行 | [项目首页](../README.md) | [Overview and local setup](../README.en.md) |
 | 配置、操作、备份与升级 | [部署与使用](operations.md) | [Deployment and recovery](operations.en.md) |
 | 模板字段、样例与贡献方式 | [模板说明](templates/README.zh-CN.md) | [Template contracts](templates/README.en.md) |
 
@@ -35,6 +35,6 @@
 
 ## English reading guide
 
-Start with the [English README](../README.md) to run the app, or the [operations guide](operations.en.md) to deploy and maintain it. The [plan](../PLAN.en.md) preserves the task dependencies and acceptance criteria; [architecture](ARCHITECTURE.md#english-summary) describes the maintained modules and scope. [Verification](verification.md#english) separates local test evidence from remote CI and real-world validation.
+Start with the [English README](../README.en.md) to run the app, or the [operations guide](operations.en.md) to deploy and maintain it. The [plan](../PLAN.en.md) preserves the task dependencies and acceptance criteria; [architecture](ARCHITECTURE.md#english-summary) describes the maintained modules and scope. [Verification](verification.md#english) separates local test evidence from remote CI and real-world validation.
 
 The research reports retain their original dates and sources. The competitive landscape describes the project before implementation on 2026-10-08; use the README and LICENSE for current features and licensing. Public research informs product decisions, but does not establish CampusCollab adoption, measured time savings or regulatory compliance. Institutional templates require current original files and confirmation from the receiving institution.

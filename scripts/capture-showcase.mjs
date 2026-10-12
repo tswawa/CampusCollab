@@ -19,7 +19,6 @@ for (const kind of only)
       'review',
       'group',
       'export',
-      'student',
       'admin',
       'login',
       'teacher',
@@ -246,7 +245,7 @@ function seed(db, teacher, student, locale) {
   })
   claimTask(db, student, labTask.id)
   startTask(db, student, labTask.id)
-  return { rosterTask, groupTask, completed, labTask, names }
+  return { rosterTask, groupTask, completed, names }
 }
 
 async function login(page, account, password) {
@@ -320,7 +319,7 @@ async function captureRoleTour(browser, origin, locale, password) {
   try {
     await loginByForm(teacherPage, locale, 'SHOWCOORD', password, true)
     await expect(teacherPage).toHaveURL(/\/teacher\/home$/)
-    await capture(teacherPage, locale, 'teacher', { locator: teacherPage.locator('.teacher-home-page') })
+    await capture(teacherPage, locale, 'teacher')
     await teacherPage.goto('/teacher/create')
     await expect(teacherPage.locator('.create-task-page')).toBeVisible()
     await teacherPage.getByLabel(t('任务名称', 'Task name'), { exact: true }).fill(title)
@@ -353,9 +352,6 @@ async function captureRoleTour(browser, origin, locale, password) {
     await teacherPage.getByLabel(t('开始时间', 'Start time'), { exact: true }).fill('09:00')
     await teacherPage.getByLabel(t('结束时间', 'End time'), { exact: true }).fill('11:30')
     await teacherPage.getByLabel(t('报名截止', 'Sign-up deadline'), { exact: true }).fill(`${date}T08:30`)
-    await teacherPage
-      .getByLabel(t('预计耗时', 'Estimated duration'), { exact: true })
-      .fill(t('约 2.5 小时', 'About 2.5 hours'))
     await teacherPage.getByLabel(t('招募人数', 'Capacity'), { exact: true }).locator('input').fill('6')
     await capture(teacherPage, locale, 'create-rules', { locator: teacherPage.locator('.create-task-page') })
     await teacherPage.getByRole('button', { name: t('下一步', 'Next'), exact: true }).click()
@@ -381,7 +377,7 @@ async function captureRoleTour(browser, origin, locale, password) {
     try {
       await loginByForm(studentPage, locale, 'SHOWSTUDENT', password)
       await expect(studentPage).toHaveURL(/\/student\/home$/)
-      await capture(studentPage, locale, 'student-home', { locator: studentPage.locator('.student-home-page') })
+      await capture(studentPage, locale, 'student-home')
       await studentPage.goto('/student/tasks')
       const search = studentPage.getByPlaceholder(
         t('搜索任务、地点或发布老师', 'Search tasks, locations or coordinators')
@@ -466,7 +462,7 @@ try {
       const password = randomBytes(24).toString('base64url')
       await installFromTrustedHost(built.db, {
         locale,
-        name: t('中国海洋大学', 'Harvard University'),
+        name: t('示例大学', 'Example University'),
         platformName: t('高校任务协作平台', 'CampusCollab'),
         timezone: en ? 'America/New_York' : 'Asia/Shanghai',
         admin: { account: 'SHOWADMIN', name: t('周老师', 'Alex Morgan'), password }
@@ -560,44 +556,6 @@ try {
       await page.getByRole('button', { name: t('查看快照核对', 'Check snapshot totals'), exact: true }).click()
       await page.locator('#workflow-results').scrollIntoViewIfNeeded()
       await capture(page, locale, 'export', { locator: page.locator('#workflow-results') })
-      await context.close()
-      context = undefined
-
-      context = await browser.newContext({
-        baseURL: origin,
-        viewport: { width: 430, height: 1000 },
-        deviceScaleFactor: 2,
-        hasTouch: true,
-        locale: en ? 'en-US' : 'zh-CN',
-        timezoneId: en ? 'America/New_York' : 'Asia/Shanghai'
-      })
-      page = await context.newPage()
-      await login(page, student.account, password)
-      await page.goto(`/student/tasks/${sample.labTask.id}/submit`)
-      await expect(page.locator('.proof-form-container')).toBeVisible()
-      await page.getByLabel(t('自报分钟数', 'Self-reported minutes'), { exact: true }).fill('90')
-      await page
-        .getByLabel(t('完成说明', 'Work description'), { exact: true })
-        .fill(
-          t(
-            '已核对 36 台展示设备，2 台标签磨损已登记；指引卡整理完毕，全部设备交接给实验室负责人。',
-            'Checked 36 display devices and recorded two worn labels. Organized the guide cards and handed all equipment to the laboratory coordinator.'
-          )
-        )
-      await page
-        .getByLabel(t('补充备注', 'Additional notes'), { exact: true })
-        .fill(t('09:00—10:30；异常登记表已交接。', '09:00–10:30; issue log handed over.'))
-      await page.locator('.proof-header-card').click()
-      await page.evaluate(() => window.scrollTo(0, 0))
-      await page.mouse.move(210, 300)
-      await page.mouse.wheel(0, -3000)
-      await page.waitForTimeout(150)
-      const mobileNavbar = await page.locator('.van-nav-bar').boundingBox()
-      const mobileHeading = await page.locator('.proof-header-card h2').boundingBox()
-      expect(mobileNavbar.y + mobileNavbar.height, 'Navigation must not cover the task title').toBeLessThanOrEqual(
-        mobileHeading.y
-      )
-      await capture(page, locale, 'student', { clip: { x: 0, y: 0, width: 430, height: 900 } })
       await context.close()
       context = undefined
 

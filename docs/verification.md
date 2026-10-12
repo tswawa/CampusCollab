@@ -2,14 +2,14 @@
 
 ## 本地验证
 
-2026-10-09，Windows、Node.js 24.13.1 环境下完成以下检查：
+2026-10-12，Linux、Node.js 24.21.0 环境下完成以下检查：
 
 | 检查 | 结果 |
 | --- | --- |
-| 前端、后端、测试类型检查及生产构建 | 通过 |
-| 后端测试 | 81 项通过 |
-| 客户端测试 | 29 项通过 |
-| Chromium 浏览器测试 | 23 项通过 |
+| 格式检查、前端、后端、测试类型检查及生产构建 | 通过 |
+| 后端测试 | 94 项通过 |
+| 客户端测试 | 32 项通过 |
+| 浏览器测试（Google Chrome） | 24 项通过 |
 
 后端测试包含 HTTP 接口、业务服务、SQLite、维护命令和并发边界；浏览器测试覆盖初始化、三个角色、双语流程、名单导入、审核、结项导出及会话失效。测试使用虚构数据；邮件测试使用替身，不能据此判断真实 SMTP 服务是否可用。
 
@@ -32,7 +32,7 @@ GitHub Actions 按 [ci.yml](../.github/workflows/ci.yml) 在 Ubuntu 上执行检
 
 ## English
 
-On 2026-10-09, the application passed type checks, a production build, 81 backend tests, 29 client tests and 23 Chromium browser tests on Windows with Node.js 24.13.1.
+On 2026-10-12, the application passed the format check, type checks, a production build, 94 backend tests, 32 client tests and 24 browser tests (Google Chrome) on Linux with Node.js 24.21.0.
 
 Backend coverage includes HTTP routes, services, SQLite, maintenance commands and concurrency boundaries. Browser coverage includes setup, all three roles, both languages, roster import, review, completion exports and session expiry. Fixtures are fictional and email delivery is mocked.
 

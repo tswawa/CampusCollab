@@ -1,6 +1,6 @@
 # Campus task collaboration: competitive landscape and open-source supply
 
-> **Historical scope: this report preserves the research and project status from 2026-10-08, before implementation. See the [README](../../README.md) for current features and [LICENSE](../../LICENSE) for the current license. Statements below about work not yet implemented describe that earlier state.**
+> **Historical scope: this report preserves the research and project status from 2026-10-08, before implementation. See the [README](../../README.en.md) for current features and [LICENSE](../../LICENSE) for the current license. Statements below about work not yet implemented describe that earlier state.**
 
 [中文](competitive-landscape.zh-CN.md) · [Product plan](../../PLAN.en.md) · [Market research](market-research.en.md) · [International adoption](international-adoption.en.md)
 

@@ -1,116 +1,110 @@
-# CampusCollab
+# 高校任务协作平台 · CampusCollab
 
-**Publish campus tasks. Let students join. Review the work.**
+**教师发布任务，学生报名参与，完成后提交材料并审核。**
 
-[简体中文](README.zh-CN.md) · [Run locally](#run-locally) · [Documentation](docs/README.md)
+[English](README.en.md) · [本地运行](#本地运行) · [文档](docs/README.md)
 
 [![CI](https://github.com/tswawa/CampusCollab/actions/workflows/ci.yml/badge.svg)](https://github.com/tswawa/CampusCollab/actions/workflows/ci.yml)
 
-CampusCollab connects teachers who organize campus work with students who take part. Teachers publish tasks and set participation and submission requirements. Students find tasks, join, and submit their results. Teachers review the work, confirm participation time, and export the final records.
+CampusCollab 用于组织校园任务与活动。教师发布任务，设置参与条件和材料要求；学生查看任务、报名参与、提交完成情况；教师审核材料、确认实际时长，最后导出结果名单和对应材料。
 
-Each institution hosts its own instance and chooses English or Chinese during setup.
+每所学校独立部署，初始化时选择中文或英文版本。
 
-| Role | Workspace | Main actions |
+| 角色 | 登录后的页面 | 可以做什么 |
 | --- | --- | --- |
-| Teacher / coordinator | Coordinator workspace | Publish tasks, manage participants, review submissions, export results |
-| Student / participant | Participant home and task hall | Find tasks, sign up, track progress, submit work |
-| Administrator | Admin console | Approve accounts, manage organizations and settings, transfer task ownership |
+| 教师 / 负责人 | 教师工作台 | 发布任务、管理参与人员、审核材料、导出结果 |
+| 学生 / 参与者 | 学生首页、任务大厅 | 查找任务、报名参与、跟进进度、提交材料 |
+| 管理员 | 管理终端 | 审批账号、管理组织与设置、交接任务负责人 |
 
-## 1. Sign in and open your workspace
+## 1. 登录，进入自己的工作台
 
-Sign in with your account. CampusCollab opens the workspace assigned to your role.
-
-<img src="docs/screenshots/showcase-en-login.png" width="420" alt="CampusCollab sign-in form" />
-
-Teachers land on a workspace with a **Publish task** entry, task counts, and pending reviews. Students see their participation progress and links to available tasks.
+输入账号和密码后，系统按账号角色进入对应页面。教师首页提供**发布任务**入口，显示任务数量和待验收事项；学生首页显示自己的参与进度，并提供任务浏览入口。
 
 <table>
-<tr><th>Teacher / coordinator</th><th>Student / participant</th></tr>
-<tr>
-<td><img src="docs/screenshots/showcase-en-teacher.png" width="420" alt="Coordinator home with the publish task entry and current tasks" /></td>
-<td><img src="docs/screenshots/showcase-en-student-home.png" width="420" alt="Participant home with personal progress and available tasks" /></td>
+<tr><th>登录</th><th>教师工作台</th><th>学生首页</th></tr>
+<tr valign="top">
+<td><img src="docs/screenshots/showcase-zh-login.png" width="260" alt="校园账号登录页面" /></td>
+<td><img src="docs/screenshots/showcase-zh-teacher.png" width="260" alt="教师工作台：发布任务入口、任务统计和我发布的任务" /></td>
+<td><img src="docs/screenshots/showcase-zh-student-home.png" width="260" alt="学生首页：参与进度和校内协作任务" /></td>
 </tr>
 </table>
 
-## 2. Publish a task
+管理员创建或重置的账号，首次登录时需要先设置新密码；所有用户都可以在“个人中心”修改密码。连续 5 次登录失败后，账号会被暂时锁定（最长 15 分钟），管理员重置密码后可立即登录。
 
-Enter the task name, work description, location, and checklist. Choose an individual task or a group activity, then set the dates, places available, participation method, and required materials.
+## 2. 教师发布任务
 
-The four-step form takes the coordinator through task details, scheduling and evidence, contact details, and a final preview.
+发布表单分四步：基本信息；时间、名额、凭证与验收规则；联系方式；发布预览。填写任务名称、地点、说明和工作清单后，设置日期、名额、面向范围、凭证要求和接取方式。预计耗时按开始和结束时间自动计算，并作为计划时长的默认值。
 
-![Coordinator filling in a new campus task](docs/screenshots/showcase-en-create.png)
+<table>
+<tr><th>基本信息</th><th>时间、名额与验收规则</th><th>发布预览</th></tr>
+<tr valign="top">
+<td><img src="docs/screenshots/showcase-zh-create.png" width="260" alt="第 1 步：填写任务名称、分类、地点、说明和工作清单" /></td>
+<td><img src="docs/screenshots/showcase-zh-create-rules.png" width="260" alt="第 2 步：设置日期、名额、面向范围、凭证要求和验收规则" /></td>
+<td><img src="docs/screenshots/showcase-zh-create-preview.png" width="260" alt="第 4 步：发布前核对完整任务信息" /></td>
+</tr>
+</table>
 
-<details>
-<summary>Participation settings and the final publishing preview</summary>
+## 3. 学生报名、参与并提交材料
 
-![Task dates, capacity, participation method, and required materials](docs/screenshots/showcase-en-create-rules.png)
+学生可以浏览、搜索和筛选任务，打开详情查看时间地点、工作要求和剩余名额。任务支持直接接取，也可以先申请、由教师审核。完成工作后，学生填写完成情况、自报时长，并按要求上传现场图片；提交后回到任务详情页，等待教师验收。
 
-![Final task preview before publishing](docs/screenshots/showcase-en-create-preview.png)
+<table>
+<tr><th>任务大厅</th><th>任务详情</th><th>提交材料</th></tr>
+<tr valign="top">
+<td><img src="docs/screenshots/showcase-zh-hall.png" width="260" alt="学生任务大厅：搜索和筛选可参与的任务" /></td>
+<td><img src="docs/screenshots/showcase-zh-detail.png" width="260" alt="任务详情：时间地点、工作要求和接取按钮" /></td>
+<td><img src="docs/screenshots/showcase-zh-submit.png" width="260" alt="学生填写完成情况、自报时长并提交材料" /></td>
+</tr>
+</table>
 
-</details>
+## 4. 教师按人审核，跟进补正
 
-## 3. Students find a task and join
+名单工作台显示每个人的提交状态，可以筛选未提交、待审核、待补正和已确认人员，也可以按姓名或编号查找。已有 CSV 名单可预览后导入。
 
-The task hall lets students browse, search, and filter available work. Opening a task shows the schedule, location, requirements, and available places.
+![教师名单工作台：查看提交、补正和确认结果](docs/screenshots/showcase-zh-roster.png)
 
-![Student task hall with available campus tasks](docs/screenshots/showcase-en-hall.png)
-
-<img src="docs/screenshots/showcase-en-detail.png" width="520" alt="Published task details with the action to join" />
-
-A task can accept participants directly or collect applications for the coordinator to approve. Joined tasks appear in the student's own task list.
-
-## 4. Submit the work
-
-Students enter what they completed, record their time, and attach images where required. Here is the submission page for the task published above.
-
-<img src="docs/screenshots/showcase-en-submit.png" width="420" alt="Student submitting the work for the task published in this walkthrough" />
-
-## 5. Review participants and follow up
-
-The coordinator's roster shows who has submitted, who needs a correction, and whose work is approved. Filter by status or search by name and ID. Existing CSV rosters can also be previewed and imported.
-
-![Coordinator roster with submissions, corrections, and confirmed participation](docs/screenshots/showcase-en-roster.png)
-
-A review can ask for a specific missing detail, such as the actual departure time. Each resubmission retains the earlier version and feedback. The coordinator approves a version and records the confirmed time; ready submissions can be reviewed in batches.
+审核时可以写明“补充实际离场时间”等具体要求。学生再次提交后，新旧版本和审核意见都会保留。教师确认材料版本与实际参与时长，也可以批量处理准备齐全的提交。验收列表会显示学生自报时长和计划时长（预填为确认时长），并提示早于任务开始时间的提交。
 
 <details>
-<summary>Submission versions and correction feedback</summary>
+<summary>查看材料版本与补正意见</summary>
 
-![Revision comparison, feedback, and confirmed participation time](docs/screenshots/showcase-en-review.png)
+![新旧材料对照、补正意见和确认时长](docs/screenshots/showcase-zh-review.png)
 
 </details>
 
 <details>
-<summary>Shared materials for a group activity</summary>
+<summary>查看集体活动的公共材料与逐人确认</summary>
 
-For group activities, the coordinator adds a shared activity record and confirms each person's result and time. Personal submissions can be required alongside the shared record.
+集体活动由负责人提交公共材料，再分别确认每个人的结果和时长。活动也可以同时要求个人补充。
 
-![Shared activity record and individual confirmation](docs/screenshots/showcase-en-group.png)
+![公共材料版本与个人参与确认](docs/screenshots/showcase-zh-group.png)
 
 </details>
 
-## 6. Close out and export
+## 5. 结项并导出结果
 
-Download a CSV, an Excel workbook, or a ZIP containing the roster and approved materials. The roster preserves completed, withdrawn, and incomplete outcomes. Later corrections create a new completion version and retain the earlier record.
+下载 CSV、Excel，或包含名单与已确认材料的 ZIP 包。完成、退出、未完成的人员都保留在名单中。后续更正会生成新的结项版本，原记录继续保留。
 
-![Completion record with participant results and ZIP, XLSX, and CSV downloads](docs/screenshots/showcase-en-export.png)
+名单依次列出姓名、学号/工号、外部编号、部门、分组、名单来源、结果和确认分钟数，内部编号放在最后。文件按“任务名称_结果版本N”命名。
 
-## Administration
+<img src="docs/screenshots/showcase-zh-export.png" width="640" alt="结项结果：结果版本、ZIP/XLSX/CSV 下载和快照核对" />
 
-Administrators approve accounts, manage organizations and institution settings, transfer task ownership, and handle notifications and data retention.
+## 管理终端
+
+管理员负责账号审批、组织与机构设置、负责人交接、通知和数据保存，并设置学生自助注册方式（开放、需审核或不开放），可以一次通过本页全部待审核账号，也可以为用户重置密码。机构还没有任务时，管理首页会列出开始使用的步骤。
 
 <details>
-<summary>Open the administrator overview</summary>
+<summary>查看管理概览</summary>
 
-![Administrator overview with pending accounts, submissions, and recent tasks](docs/screenshots/showcase-en-admin.png)
+![管理概览：待审批账号、待审核材料与近期任务](docs/screenshots/showcase-zh-admin.png)
 
 </details>
 
-The screenshots use fictional activity data and Harvard University as an example institution name.
+截图中的学校（示例大学）、人员和活动均为虚构。
 
-## Run locally
+## 本地运行
 
-Requires Node.js `>=24.13.1 <25` and npm.
+需要 Node.js `>=24.13.1 <25` 和 npm。
 
 ```sh
 git clone https://github.com/tswawa/CampusCollab.git
@@ -118,32 +112,33 @@ cd CampusCollab
 npm ci
 ```
 
-Copy `.env.example` to `.env`, then start the app:
+将 `.env.example` 复制为 `.env`，然后启动：
 
 ```sh
 npm run dev
 ```
 
-Open [localhost:5173](http://localhost:5173). The API runs on port `3000`; database migrations run at startup.
+打开 [localhost:5173](http://localhost:5173)。API 默认端口为 `3000`，数据库在启动时自动迁移。
 
-On the first visit, choose the institution language, enter its details and time zone, and create the administrator account. Use the setup code from `SETUP_TOKEN` in `.env`, or read the generated `data/campus.sqlite.setup-token` file on the host when that setting is empty.
+首次访问时选择语言、填写机构信息与时区，选择学生注册方式，并创建管理员。安装码使用 `.env` 中的 `SETUP_TOKEN`；留空时，由部署负责人读取首次启动生成的 `data/campus.sqlite.setup-token` 文件。
 
-## Deploy
+## 部署
 
-Configure `.env` with `NODE_ENV=production`, the public HTTPS `APP_ORIGIN`, and persistent database, upload, and backup paths. Then run:
+在 `.env` 中设置 `NODE_ENV=production`、实际的 HTTPS `APP_ORIGIN`，以及数据库、图片和备份的持久路径，然后运行：
 
 ```sh
 npm run build
 npm start
 ```
 
-The server listens on `127.0.0.1:3000` by default. Use a reverse proxy for HTTPS. The [operations guide](docs/operations.en.md) covers configuration, backup, upgrades, and recovery.
+服务默认监听 `127.0.0.1:3000`，通过反向代理提供 HTTPS，并将 `TRUST_PROXY` 设为该代理的地址。配置、备份、升级和恢复步骤见[运维说明](docs/operations.md)。
 
-## Development
+## 开发
 
-Vue 3, Pinia, and Vant on the frontend; Fastify and Node's built-in SQLite on the backend.
+前端使用 Vue 3、Pinia 和 Vant，后端使用 Fastify 与 Node 内置 SQLite。
 
 ```sh
+npm run format:check
 npm run type-check
 npm run test:api
 npm run test:client
@@ -151,12 +146,12 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-- [Architecture and scope](docs/ARCHITECTURE.md#english-summary)
-- [Contributing](CONTRIBUTING.md)
-- [Product plan and research](PLAN.en.md)
-- [Test coverage](docs/verification.md#english)
-- [Security reporting](SECURITY.md)
+- [架构与项目边界](docs/ARCHITECTURE.md)
+- [贡献说明](CONTRIBUTING.md)
+- [产品计划与调研](PLAN.md)
+- [验证说明](docs/verification.md)
+- [安全问题报告](SECURITY.md)
 
-## License
+## 许可证
 
-[AGPL-3.0-only](LICENSE). CampusCollab is derived from the ZVMS4 frontend and retains its [MIT copyright and permission notice](LICENSES/ZVMS-MIT.txt). See [NOTICE](NOTICE). Production builds include the corresponding source archive at `/source.zip`.
+采用 [AGPL-3.0-only](LICENSE)。项目基于 ZVMS4 前端开发，保留[上游 MIT 版权和许可声明](LICENSES/ZVMS-MIT.txt)，详见 [NOTICE](NOTICE)。生产构建附带对应源码包 `/source.zip`。

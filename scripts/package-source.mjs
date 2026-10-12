@@ -29,7 +29,7 @@ const files = [
   'LICENSE',
   'NOTICE',
   'README.md',
-  'README.zh-CN.md',
+  'README.en.md',
   'PLAN.md',
   'PLAN.en.md',
   'CONTRIBUTING.md',

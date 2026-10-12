@@ -141,6 +141,7 @@ export const english = {
   名单总人数: 'Total participants',
   待审核材料: 'Awaiting review',
   已确认人数: 'Confirmed participants',
+  分钟: 'min',
   确认分钟: 'Confirmed minutes',
   '需补正 {p0} 人': '{p0, plural, one {# needs corrections} other {# need corrections}}',
   '其他结果 {p0} 人': '{p0, plural, one {# other outcome} other {# other outcomes}}',

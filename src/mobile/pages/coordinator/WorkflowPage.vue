@@ -955,7 +955,8 @@ function checkDeniedMutation(cause: unknown) {
         </div>
         <div class="workspace-metric">
           <span class="metric-label">{{ msg('确认分钟') }}</span
-          ><strong>{{ formatNumber(confirmedMinutes) }}<small>min</small></strong
+          ><strong
+            >{{ formatNumber(confirmedMinutes) }}<small>{{ msg('分钟') }}</small></strong
           ><van-icon name="clock-o" aria-hidden="true" />
         </div>
       </section>
@@ -1135,7 +1136,7 @@ function checkDeniedMutation(cause: unknown) {
                   ><strong :class="{ 'roster-empty-value': p.confirmedMinutes === null }">{{
                     p.confirmedMinutes === null ? '—' : formatNumber(p.confirmedMinutes)
                   }}</strong
-                  ><span v-if="p.confirmedMinutes !== null" class="roster-unit">min</span>
+                  ><span v-if="p.confirmedMinutes !== null" class="roster-unit">{{ msg('分钟') }}</span>
                 </td>
                 <td class="roster-action-cell">
                   <button type="button" class="roster-record-button" @click="inspect(p)">
@@ -1311,7 +1312,9 @@ function checkDeniedMutation(cause: unknown) {
                     <td>{{ p.name }}</td>
                     <td>{{ p.externalId ?? '—' }}</td>
                     <td>{{ statusLabel(p.status) }}</td>
-                    <td>{{ p.confirmedMinutes === null ? '—' : formatNumber(p.confirmedMinutes) }} min</td>
+                    <td>
+                      {{ p.confirmedMinutes === null ? '—' : `${formatNumber(p.confirmedMinutes)} ${msg('分钟')}` }}
+                    </td>
                     <td>
                       {{
                         p.confirmedRevisionId
@@ -1649,7 +1652,9 @@ function checkDeniedMutation(cause: unknown) {
             <ol>
               <li v-for="item in active.reviews" :key="item.id">
                 {{ reviewLabel(item) }} · {{ formatTimestamp(item.createdAt) }} · {{ item.feedback }}
-                <span v-if="item.confirmedMinutes !== null">{{ formatNumber(item.confirmedMinutes) }} min</span>
+                <span v-if="item.confirmedMinutes !== null"
+                  >{{ formatNumber(item.confirmedMinutes) }} {{ msg('分钟') }}</span
+                >
               </li>
             </ol>
           </section>
