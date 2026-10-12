@@ -1,8 +1,8 @@
-# 高校任务协作平台（CampusCollab）产品与实施计划
+# 校园任务通（CampusTask）产品与实施计划
 
 [English](PLAN.en.md) · [文档导航](docs/README.md) · [市场研究](docs/research/market-research.zh-CN.md) · [竞品研究](docs/research/competitive-landscape.zh-CN.md) · [海外适配研究](docs/research/international-adoption.zh-CN.md)
 
-版本 1.7。更新日期 2026-10-09。**双语任务、名单、材料审核、结项导出和机构管理已实现，源码已发布到 GitHub。** 验证范围见[验证说明](docs/verification.md)，各次提交的 CI 结果见 [Actions](https://github.com/tswawa/CampusCollab/actions)。学校实际采用、真实邮件投递、现行学校模板接收和人工屏幕阅读器检查仍待验证；职责与不做事项见[架构边界](docs/ARCHITECTURE.md)。
+版本 1.7。更新日期 2026-10-09。**双语任务、名单、材料审核、结项导出和机构管理已实现，源码已发布到 GitHub。** 验证范围见[验证说明](docs/verification.md)，各次提交的 CI 结果见 [Actions](https://github.com/tswawa/CampusTask/actions)。学校实际采用、真实邮件投递、现行学校模板接收和人工屏幕阅读器检查仍待验证；职责与不做事项见[架构边界](docs/ARCHITECTURE.md)。
 
 目标是把现有多人任务系统完善为可独立部署的开源成品：从发布或导入名单开始，完成参与、材料收集、补正、审核、结项和交接，输出彼此对应的名单、材料及确认记录。优先服务有持续实践任务的院系、校园服务部门和社区参与项目，兼顾校内技术团队的二次开发。
 
@@ -10,7 +10,7 @@
 
 ## 产品范围与发布目标
 
-中文名称为“高校任务协作平台”，英文名称为 CampusCollab（Campus Collaboration）。仓库为 [tswawa/CampusCollab](https://github.com/tswawa/CampusCollab)，npm 包名为 `campuscollab`。各机构使用自己的域名独立部署。
+中文名称为“校园任务通”，英文名称为 CampusTask。仓库为 [tswawa/CampusTask](https://github.com/tswawa/CampusTask)，npm 包名为 `campustask`。各机构使用自己的域名独立部署。
 
 | 发布层次 | 必须包含的结果 | 当前状态 |
 | --- | --- | --- |
@@ -188,7 +188,7 @@ T03 分两道门：通用模板合同与虚构样例足以启动 T04、T10 等�
 
 项目采用 `AGPL-3.0-only`，`LICENSE`、包元数据及 `NOTICE` 已统一，ZVMS 原 MIT 声明保存在 `LICENSES/ZVMS-MIT.txt`。构建生成与源码对应的 `/source.zip` 及许可入口。默认图标采用项目生成资源，来源记录见[资源说明](public/ASSETS.md)和[依赖审阅](docs/dependency-review.md)。截图中的学校名称仅用于展示，不代表学校使用或背书。
 
-GitHub 仓库包含双语 README、虚构演示数据、功能边界、截图、安装与升级、模板贡献示例、问题报告入口、安全报告说明与 CI。[源码已公开](https://github.com/tswawa/CampusCollab)，私密漏洞报告已启用，使用方法见[安全报告说明](SECURITY.md)。CI 在每次推送及 PR 时运行，结果按具体提交查看；公开源码不等于已完成生产部署或学校采用验证。
+GitHub 仓库包含双语 README、虚构演示数据、功能边界、截图、安装与升级、模板贡献示例、问题报告入口、安全报告说明与 CI。[源码已公开](https://github.com/tswawa/CampusTask)，私密漏洞报告已启用，使用方法见[安全报告说明](SECURITY.md)。CI 在每次推送及 PR 时运行，结果按具体提交查看；公开源码不等于已完成生产部署或学校采用验证。
 
 ## 风险与恢复
 
@@ -215,7 +215,7 @@ GitHub 仓库包含双语 README、虚构演示数据、功能边界、截图、
 - [x] 管理界面：一次性初始化、机构统一语言、桌面侧栏与移动抽屉、名单工作台、真实统计、通知与数据管理分区、结项记录分页均已实现。
 - [ ] T03：通用模板和历史学校模板预览已实现；仍需目标学校提供现行原始表格，并确认字段、材料、命名与接收要求。
 - [ ] T24：仍需完成目标浏览器与辅助技术组合下的人工屏幕阅读器关键路径检查。
-- [x] T26：源码、双语文档、截图、贡献入口与私密漏洞报告已公开配置，GitHub Actions 已接入；具体提交的检查结果见 [Actions](https://github.com/tswawa/CampusCollab/actions)。
+- [x] T26：源码、双语文档、截图、贡献入口与私密漏洞报告已公开配置，GitHub Actions 已接入；具体提交的检查结果见 [Actions](https://github.com/tswawa/CampusTask/actions)。
 - [ ] T27：需核对发布提交、构建与对应源码，并在发布前确认剩余验收项的处理状态。
 - [ ] T30：官方身份接口与外部结果适配仍需明确的接口或模板合同，尚无已实现的官方 SSO。
 - [ ] 实际使用验证：尚无学校采用、真实 SMTP 投递、现行学校模板接收、规模性能或节时收益的实测结论。

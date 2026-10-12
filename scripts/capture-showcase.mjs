@@ -271,17 +271,37 @@ async function ready(page) {
   await expect(page.locator('.van-toast')).toBeHidden()
 }
 
+// Phone screens share one device frame so README rows line up and read as phone screens.
+async function framePhone(browser, file) {
+  const image = (await fs.readFile(file)).toString('base64')
+  const page = await browser.newPage({ viewport: { width: 480, height: 960 }, deviceScaleFactor: 2 })
+  try {
+    await page.setContent(`<!doctype html><body style="margin:0;background:transparent">
+      <div id="frame" style="display:inline-block;padding:24px">
+        <div style="padding:10px;border-radius:52px;background:#111827;
+          box-shadow:0 0 0 1px rgba(255,255,255,.18),0 12px 28px rgba(15,23,42,.28)">
+          <img src="data:image/png;base64,${image}" style="display:block;width:390px;height:844px;border-radius:42px">
+        </div>
+      </div></body>`)
+    await page.locator('#frame').screenshot({ path: file, omitBackground: true })
+  } finally {
+    await page.close()
+  }
+}
+
 async function capture(page, locale, kind, options = {}) {
   if (only.size && !only.has(kind)) return
   await ready(page)
   const filename = `showcase-${locale === 'en' ? 'en' : 'zh'}-${kind}.png`
-  const { locator, ...settings } = options
+  const { locator, phone, ...settings } = options
+  if (phone) await page.evaluate(() => window.scrollTo(0, 0))
   await (locator ?? page).screenshot({
     path: path.join(output, filename),
     type: 'png',
     animations: 'disabled',
     ...settings
   })
+  if (phone) await framePhone(page.context().browser(), path.join(output, filename))
   console.log(`${filename} ${page.url().replace(/^https?:\/\/[^/]+/, '')}`)
 }
 
@@ -293,7 +313,7 @@ async function loginByForm(page, locale, account, password, captureLogin = false
   const passwordField = page.getByLabel(t('登录密码', 'Password'), { exact: true })
   await expect(accountField).toBeVisible()
   await accountField.fill(account)
-  if (captureLogin) await capture(page, locale, 'login', { locator: page.locator('.auth-shell') })
+  if (captureLogin) await capture(page, locale, 'login', { phone: true })
   await passwordField.fill(password)
   await page.getByRole('button', { name: t('登 录', 'Sign in'), exact: true }).click()
   await expect(page).toHaveURL(/\/(teacher|student|admin)\/home$/)
@@ -302,7 +322,7 @@ async function loginByForm(page, locale, account, password, captureLogin = false
 async function captureRoleTour(browser, origin, locale, password) {
   const en = locale === 'en'
   const t = (zh, english) => (en ? english : zh)
-  const viewport = { width: 560, height: 1050 }
+  const viewport = { width: 390, height: 844 }
   const title = t('校园开放日 · 上午引导', 'Campus Open Day · Morning welcome')
   const date = Temporal.Now.zonedDateTimeISO(en ? 'America/New_York' : 'Asia/Shanghai')
     .toPlainDate()
@@ -319,7 +339,7 @@ async function captureRoleTour(browser, origin, locale, password) {
   try {
     await loginByForm(teacherPage, locale, 'SHOWCOORD', password, true)
     await expect(teacherPage).toHaveURL(/\/teacher\/home$/)
-    await capture(teacherPage, locale, 'teacher')
+    await capture(teacherPage, locale, 'teacher', { phone: true })
     await teacherPage.goto('/teacher/create')
     await expect(teacherPage.locator('.create-task-page')).toBeVisible()
     await teacherPage.getByLabel(t('任务名称', 'Task name'), { exact: true }).fill(title)
@@ -346,20 +366,20 @@ async function captureRoleTour(browser, origin, locale, password) {
           'Count visitor check-ins\nComplete the shift handover\nReturn guide packs'
         )
       )
-    await capture(teacherPage, locale, 'create', { locator: teacherPage.locator('.create-task-page') })
+    await capture(teacherPage, locale, 'create', { phone: true })
     await teacherPage.getByRole('button', { name: t('下一步', 'Next'), exact: true }).click()
     await teacherPage.getByLabel(t('任务日期', 'Task date'), { exact: true }).fill(date)
     await teacherPage.getByLabel(t('开始时间', 'Start time'), { exact: true }).fill('09:00')
     await teacherPage.getByLabel(t('结束时间', 'End time'), { exact: true }).fill('11:30')
     await teacherPage.getByLabel(t('报名截止', 'Sign-up deadline'), { exact: true }).fill(`${date}T08:30`)
     await teacherPage.getByLabel(t('招募人数', 'Capacity'), { exact: true }).locator('input').fill('6')
-    await capture(teacherPage, locale, 'create-rules', { locator: teacherPage.locator('.create-task-page') })
+    await capture(teacherPage, locale, 'create-rules', { phone: true })
     await teacherPage.getByRole('button', { name: t('下一步', 'Next'), exact: true }).click()
     await teacherPage.getByRole('button', { name: t('下一步', 'Next'), exact: true }).click()
     await expect(
       teacherPage.getByRole('button', { name: t('确认发布任务', 'Publish task'), exact: true })
     ).toBeVisible()
-    await capture(teacherPage, locale, 'create-preview', { locator: teacherPage.locator('.create-task-page') })
+    await capture(teacherPage, locale, 'create-preview', { phone: true })
     await teacherPage.getByRole('button', { name: t('确认发布任务', 'Publish task'), exact: true }).click()
     await expect(teacherPage).toHaveURL(/\/tasks\/[^/]+\/workflow$/)
     const taskId = teacherPage.url().match(/\/tasks\/([^/]+)\/workflow$/)?.[1]
@@ -377,7 +397,7 @@ async function captureRoleTour(browser, origin, locale, password) {
     try {
       await loginByForm(studentPage, locale, 'SHOWSTUDENT', password)
       await expect(studentPage).toHaveURL(/\/student\/home$/)
-      await capture(studentPage, locale, 'student-home')
+      await capture(studentPage, locale, 'student-home', { phone: true })
       await studentPage.goto('/student/tasks')
       const search = studentPage.getByPlaceholder(
         t('搜索任务、地点或发布老师', 'Search tasks, locations or coordinators')
@@ -385,12 +405,12 @@ async function captureRoleTour(browser, origin, locale, password) {
       await search.fill(title)
       const card = studentPage.locator('.campus-task-card').filter({ hasText: title })
       await expect(card).toBeVisible()
-      await capture(studentPage, locale, 'hall', { locator: studentPage.locator('.task-hall-page') })
+      await capture(studentPage, locale, 'hall', { phone: true })
       await card.click()
       await expect(studentPage).toHaveURL(new RegExp(`/tasks/${taskId}$`))
       await expect(studentPage.locator('.task-detail-container h1')).toHaveText(title)
       await expect(studentPage.getByRole('button', { name: t('立即接取任务', 'Join task'), exact: true })).toBeVisible()
-      await capture(studentPage, locale, 'detail')
+      await capture(studentPage, locale, 'detail', { phone: true })
       await studentPage.getByRole('button', { name: t('立即接取任务', 'Join task'), exact: true }).click()
       await expect(studentPage.getByRole('button', { name: t('开始任务', 'Start task'), exact: true })).toBeVisible()
       await studentPage.getByRole('button', { name: t('开始任务', 'Start task'), exact: true }).click()
@@ -411,7 +431,7 @@ async function captureRoleTour(browser, origin, locale, password) {
       await studentPage
         .getByLabel(t('补充备注', 'Additional notes'), { exact: true })
         .fill(t('09:00—11:30，交接完成。', '09:00–11:30; handover complete.'))
-      await capture(studentPage, locale, 'submit')
+      await capture(studentPage, locale, 'submit', { phone: true })
     } finally {
       await studentContext.close()
     }
@@ -463,7 +483,7 @@ try {
       await installFromTrustedHost(built.db, {
         locale,
         name: t('示例大学', 'Example University'),
-        platformName: t('高校任务协作平台', 'CampusCollab'),
+        platformName: t('校园任务通', 'CampusTask'),
         timezone: en ? 'America/New_York' : 'Asia/Shanghai',
         admin: { account: 'SHOWADMIN', name: t('周老师', 'Alex Morgan'), password }
       })

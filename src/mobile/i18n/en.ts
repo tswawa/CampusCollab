@@ -1,7 +1,7 @@
 import { productNames } from '../../../shared/brand'
 /** Product copy only. Institution names and user-authored evidence are never translated. */
 export const english = {
-  高校任务协作平台: productNames.en,
+  校园任务通: productNames.en,
   '加载中…': 'Loading…',
   账号资料: 'Account details',
   变更请联系管理员: 'Contact an administrator to update your details',
@@ -894,7 +894,7 @@ export const english = {
   暂无对应状态的任务: 'No tasks with this status',
   未设置学院: 'No unit set',
   未设置年级: 'No year set',
-  连接校园协作服务: 'Connecting to CampusCollab',
+  正在连接校园任务通: 'Connecting to CampusTask',
   '旧浏览器演示数据未迁移，不会读取、上传或删除。请使用服务端账号登录。':
     'Legacy browser demo data is not migrated or accessed. Sign in with your server account.',
   语言: 'Language',

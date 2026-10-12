@@ -577,7 +577,7 @@ test('断网启动显示明确错误和重试，恢复后忽略伪造旧演示�
   }
 
   await page.goto('/admin/accounts')
-  await expect(page.getByRole('heading', { name: '连接校园协作服务', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '正在连接校园任务通', exact: true })).toBeVisible()
   const loadState = page.locator('.api-load-state[role="status"]')
   await expect(loadState).toHaveCount(1)
   await expect(loadState.getByText('连接失败，请检查网络后重试', { exact: true })).toBeVisible()
@@ -610,7 +610,7 @@ test('断网启动显示明确错误和重试，恢复后忽略伪造旧演示�
   )
   await expect(page.getByLabel('登录账号', { exact: true })).toBeVisible()
   await expect(page.locator('.api-load-state')).toHaveCount(0)
-  await expect(page.getByRole('heading', { name: '连接校园协作服务', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: '正在连接校园任务通', exact: true })).toHaveCount(0)
   await expect(page.locator('.admin-backoffice-shell')).toHaveCount(0)
   await expect(page.locator('body')).not.toContainText(forgedUser.name)
   await expectLegacyStorageUnchanged()

@@ -1,4 +1,4 @@
-# CampusCollab Market and Demand Research
+# CampusTask Market and Demand Research
 
 [简体中文](market-research.zh-CN.md) · [Master plan](../../PLAN.en.md) · [Competitive landscape](competitive-landscape.en.md) · [International adoption](international-adoption.en.md)
 

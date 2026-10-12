@@ -1,6 +1,6 @@
 {
-  "name": "CampusCollab",
-  "short_name": "CampusCollab",
+  "name": "CampusTask",
+  "short_name": "CampusTask",
   "description": "Campus collaboration, evidence review and completion records",
   "start_url": "/",
   "icons": [

@@ -70,7 +70,7 @@ export function loadConfig(overrides: Partial<AppConfig> = {}): AppConfig {
   const [major, minor, patch] = process.versions.node.split('.').map(Number)
   if (![major, minor, patch].every(Number.isInteger) || major !== 24 || minor! < 13 || (minor === 13 && patch! < 1)) {
     throw new Error(
-      'Node.js >=24.13.1 <25 is required. Upgrade Node before starting CampusCollab or running maintenance.'
+      'Node.js >=24.13.1 <25 is required. Upgrade Node before starting CampusTask or running maintenance.'
     )
   }
   const nodeEnv = (

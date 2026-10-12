@@ -59,4 +59,4 @@ const symbol = source.match(/<g id="symbol"[\s\S]*?<\/g>/)?.[0]
 if (!symbol) throw new Error('brand.svg must contain the original symbol group')
 const pinned = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">\n${symbol.replaceAll('#ffffff', '#000000')}\n</svg>\n`
 await fs.writeFile(path.join(publicDir, 'safari-pinned-tab.svg'), pinned)
-console.log(`Generated ${targets.length + 3} CampusCollab icon files from public/brand.svg`)
+console.log(`Generated ${targets.length + 3} CampusTask icon files from public/brand.svg`)

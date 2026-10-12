@@ -9,7 +9,7 @@
   >
     <a href="#main-content" class="skip-link">{{ msg('跳至主要内容') }}</a>
     <div v-if="!bootState.ready" class="auth-shell" style="padding: 36px 20px">
-      <h2>{{ msg('连接校园协作服务') }}</h2>
+      <h2>{{ msg('正在连接校园任务通') }}</h2>
       <LoadState :loading="bootState.loading" :error="bootState.error" @retry="retry" />
     </div>
     <template v-else>
@@ -44,7 +44,7 @@ const adminConsole = computed(() => route.path.startsWith('/admin') && bootState
 watchEffect(() => {
   locale.value
   const page = knownMessage(String(route.meta.title ?? ''))
-  document.title = [page, msg('高校任务协作平台'), system.school.name].filter(Boolean).join(' · ')
+  document.title = [page, msg('校园任务通'), system.school.name].filter(Boolean).join(' · ')
 })
 async function retry() {
   if (await bootstrap(true)) {

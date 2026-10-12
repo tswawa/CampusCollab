@@ -24,9 +24,9 @@ npm run test:client
 npm run test:e2e:built
 ```
 
-GitHub Actions 按 [ci.yml](../.github/workflows/ci.yml) 在 Ubuntu 上执行检查。每次提交的实际结果请查看 [Actions](https://github.com/tswawa/CampusCollab/actions)，本地通过不代表远端已通过。
+GitHub Actions 按 [ci.yml](../.github/workflows/ci.yml) 在 Ubuntu 上执行检查。每次提交的实际结果请查看 [Actions](https://github.com/tswawa/CampusTask/actions)，本地通过不代表远端已通过。
 
-首次公开提交 `e04917e` 的 [Ubuntu CI](https://github.com/tswawa/CampusCollab/actions/runs/37880337338) 已通过依赖安装、类型检查、后端与客户端测试、生产构建和 Chromium 浏览器测试。
+首次公开提交 `e04917e` 的 [Ubuntu CI](https://github.com/tswawa/CampusTask/actions/runs/37880337338) 已通过依赖安装、类型检查、后端与客户端测试、生产构建和 Chromium 浏览器测试。
 
 当前没有学校实际采用记录，也没有真实邮件投递、学校现行模板接收或大规模部署的验证结论。部署步骤及维护限制见[运维说明](operations.md)。
 
@@ -36,6 +36,6 @@ On 2026-10-12, the application passed the format check, type checks, a productio
 
 Backend coverage includes HTTP routes, services, SQLite, maintenance commands and concurrency boundaries. Browser coverage includes setup, all three roles, both languages, roster import, review, completion exports and session expiry. Fixtures are fictional and email delivery is mocked.
 
-The commands above reproduce the checks. GitHub Actions runs them on Ubuntu; check [the workflow results](https://github.com/tswawa/CampusCollab/actions) for each commit. Local success does not establish a remote CI result, live SMTP delivery, institutional adoption, acceptance of school-specific templates or large-scale deployment readiness. See [operations](operations.en.md) for deployment and maintenance requirements.
+The commands above reproduce the checks. GitHub Actions runs them on Ubuntu; check [the workflow results](https://github.com/tswawa/CampusTask/actions) for each commit. Local success does not establish a remote CI result, live SMTP delivery, institutional adoption, acceptance of school-specific templates or large-scale deployment readiness. See [operations](operations.en.md) for deployment and maintenance requirements.
 
-The [Ubuntu CI run for the first public commit, e04917e](https://github.com/tswawa/CampusCollab/actions/runs/37880337338), passed dependency installation, type checks, backend and client tests, the production build and Chromium browser tests.
+The [Ubuntu CI run for the first public commit, e04917e](https://github.com/tswawa/CampusTask/actions/runs/37880337338), passed dependency installation, type checks, backend and client tests, the production build and Chromium browser tests.

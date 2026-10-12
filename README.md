@@ -1,13 +1,13 @@
 <div align="center">
 
-<img src="docs/logo.png" width="140" alt="CampusCollab 图标" />
+<img src="docs/logo.png" width="140" alt="校园任务通图标" />
 
-<h1>CampusCollab</h1>
+<h1>校园任务通</h1>
 
-<p>高校任务协作平台<br />
+<p>老师发任务，同学来报名，完成有记录。<br />
 任务发布 · 报名接取 · 材料提交 · 审核补正 · 时长确认 · 结项导出</p>
 
-[![CI](https://github.com/tswawa/CampusCollab/actions/workflows/ci.yml/badge.svg)](https://github.com/tswawa/CampusCollab/actions/workflows/ci.yml)
+[![CI](https://github.com/tswawa/CampusTask/actions/workflows/ci.yml/badge.svg)](https://github.com/tswawa/CampusTask/actions/workflows/ci.yml)
 ![部署：自托管](https://img.shields.io/badge/%E9%83%A8%E7%BD%B2-%E8%87%AA%E6%89%98%E7%AE%A1-0f766e)
 ![语言：中文 | English](https://img.shields.io/badge/%E8%AF%AD%E8%A8%80-%E4%B8%AD%E6%96%87%20%7C%20English-1e60d5)
 [![许可证：AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-1e60d5)](LICENSE)
@@ -16,7 +16,7 @@
 
 </div>
 
-CampusCollab 用于组织校园任务与活动：教师发布任务并设置参与条件和材料要求，学生报名参与并提交完成情况，教师审核材料、确认实际时长，最后导出结果名单和对应材料。每所学校独立部署，初始化时选择中文或英文版本。
+校园任务通（CampusTask）用于组织校园任务与活动：教师发布任务并设置参与条件和材料要求，学生报名参与并提交完成情况，教师审核材料、确认实际时长，最后导出结果名单和对应材料。每所学校独立部署，初始化时选择中文或英文版本。
 
 - **教师 / 负责人**：发布任务、管理参与人员、审核材料并确认时长，结项后导出 CSV、Excel 或 ZIP。
 - **学生 / 参与者**：在任务大厅查找并报名任务，提交完成情况和现场图片，跟进审核进度。
@@ -116,8 +116,8 @@ CampusCollab 用于组织校园任务与活动：教师发布任务并设置参�
 需要 Node.js `>=24.13.1 <25` 和 npm。
 
 ```sh
-git clone https://github.com/tswawa/CampusCollab.git
-cd CampusCollab
+git clone https://github.com/tswawa/CampusTask.git
+cd CampusTask
 npm ci
 ```
 

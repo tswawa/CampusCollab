@@ -28,7 +28,7 @@ const {
 
 const immersive = computed(() => Boolean(route.meta.immersive))
 const hideNav = computed(() => Boolean(route.meta.hideNav))
-const title = computed(() => knownMessage(String(route.meta.title ?? '高校任务协作平台')))
+const title = computed(() => knownMessage(String(route.meta.title ?? '校园任务通')))
 const unread = computed(() => (auth.currentUser ? tasks.unreadCount : 0))
 const taskWorkspace = computed(() => route.name === 'task-workflow')
 const homePath = computed(() =>
@@ -73,7 +73,7 @@ function goBack() {
       <RouterLink :to="homePath" class="task-workspace-brand">
         <span class="task-workspace-brand-mark" aria-hidden="true"><van-icon name="todo-list-o" size="22" /></span>
         <span class="task-workspace-brand-copy"
-          ><strong>{{ msg('高校任务协作平台') }}</strong
+          ><strong>{{ msg('校园任务通') }}</strong
           ><span>{{ system.school.name }}</span></span
         >
       </RouterLink>

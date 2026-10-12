@@ -1,13 +1,13 @@
 <div align="center">
 
-<img src="docs/logo.png" width="140" alt="CampusCollab icon" />
+<img src="docs/logo.png" width="140" alt="CampusTask icon" />
 
-<h1>CampusCollab</h1>
+<h1>CampusTask</h1>
 
-<p>Campus tasks and participation records for universities<br />
+<p>Teachers post tasks, students sign up, and every contribution is recorded.<br />
 Publish tasks · Sign-ups · Evidence · Review and corrections · Confirmed time · Closeout exports</p>
 
-[![CI](https://github.com/tswawa/CampusCollab/actions/workflows/ci.yml/badge.svg)](https://github.com/tswawa/CampusCollab/actions/workflows/ci.yml)
+[![CI](https://github.com/tswawa/CampusTask/actions/workflows/ci.yml/badge.svg)](https://github.com/tswawa/CampusTask/actions/workflows/ci.yml)
 ![self-hosted](https://img.shields.io/badge/self--hosted-Node.js%2024%20%2B%20SQLite-0f766e)
 ![languages: 中文 | English](https://img.shields.io/badge/languages-%E4%B8%AD%E6%96%87%20%7C%20English-1e60d5)
 [![license: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-1e60d5)](LICENSE)
@@ -16,7 +16,7 @@ Publish tasks · Sign-ups · Evidence · Review and corrections · Confirmed tim
 
 </div>
 
-CampusCollab connects teachers who organize campus work with students who take part. Teachers publish tasks and set participation and submission requirements; students find tasks, join, and submit their results; teachers review the work, confirm participation time, and export the final records. Each institution hosts its own instance and chooses English or Chinese during setup.
+CampusTask (校园任务通) connects teachers who organize campus work with students who take part. Teachers publish tasks and set participation and submission requirements; students find tasks, join, and submit their results; teachers review the work, confirm participation time, and export the final records. Each institution hosts its own instance and chooses English or Chinese during setup.
 
 - **Teachers / coordinators**: publish tasks, manage participants, review submissions and confirm time, then export CSV, Excel or ZIP at closeout.
 - **Students / participants**: find and join tasks in the task hall, submit what they did with photos, and follow the review.
@@ -29,12 +29,12 @@ CampusCollab connects teachers who organize campus work with students who take p
 
 ### 1. Sign in and open your workspace
 
-Sign in with your account. CampusCollab opens the workspace assigned to your role. Teachers land on a workspace with a **Publish task** entry, task counts, and pending reviews. Students see their participation progress and links to available tasks.
+Sign in with your account. CampusTask opens the workspace assigned to your role. Teachers land on a workspace with a **Publish task** entry, task counts, and pending reviews. Students see their participation progress and links to available tasks.
 
 <table>
 <tr><th>Sign in</th><th>Teacher / coordinator</th><th>Student / participant</th></tr>
 <tr valign="top">
-<td><img src="docs/screenshots/showcase-en-login.png" width="260" alt="CampusCollab sign-in form" /></td>
+<td><img src="docs/screenshots/showcase-en-login.png" width="260" alt="CampusTask sign-in form" /></td>
 <td><img src="docs/screenshots/showcase-en-teacher.png" width="260" alt="Coordinator home with the publish task entry, task counts and current tasks" /></td>
 <td><img src="docs/screenshots/showcase-en-student-home.png" width="260" alt="Participant home with personal progress and available tasks" /></td>
 </tr>
@@ -116,8 +116,8 @@ All institutions, people and activities in the screenshots are fictional.
 Requires Node.js `>=24.13.1 <25` and npm.
 
 ```sh
-git clone https://github.com/tswawa/CampusCollab.git
-cd CampusCollab
+git clone https://github.com/tswawa/CampusTask.git
+cd CampusTask
 npm ci
 ```
 
@@ -163,4 +163,4 @@ npm run test:e2e
 
 ## License
 
-[AGPL-3.0-only](LICENSE). CampusCollab is derived from the ZVMS4 frontend and retains its [MIT copyright and permission notice](LICENSES/ZVMS-MIT.txt). See [NOTICE](NOTICE). Production builds include the corresponding source archive at `/source.zip`.
+[AGPL-3.0-only](LICENSE). CampusTask is derived from the ZVMS4 frontend and retains its [MIT copyright and permission notice](LICENSES/ZVMS-MIT.txt). See [NOTICE](NOTICE). Production builds include the corresponding source archive at `/source.zip`.

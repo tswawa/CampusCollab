@@ -1,4 +1,4 @@
-# 高校任务协作平台（CampusCollab）市场与需求研究
+# 校园任务通（CampusTask）市场与需求研究
 
 [English](market-research.en.md) · [总计划](../../PLAN.md) · [竞品研究](competitive-landscape.zh-CN.md) · [海外适配](international-adoption.zh-CN.md)
 

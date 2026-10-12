@@ -1,4 +1,4 @@
-# CampusCollab 文档
+# CampusTask 文档
 
 [项目首页](../README.md) · [English README](../README.en.md)
 
@@ -37,4 +37,4 @@
 
 Start with the [English README](../README.en.md) to run the app, or the [operations guide](operations.en.md) to deploy and maintain it. The [plan](../PLAN.en.md) preserves the task dependencies and acceptance criteria; [architecture](ARCHITECTURE.md#english-summary) describes the maintained modules and scope. [Verification](verification.md#english) separates local test evidence from remote CI and real-world validation.
 
-The research reports retain their original dates and sources. The competitive landscape describes the project before implementation on 2026-10-08; use the README and LICENSE for current features and licensing. Public research informs product decisions, but does not establish CampusCollab adoption, measured time savings or regulatory compliance. Institutional templates require current original files and confirmation from the receiving institution.
+The research reports retain their original dates and sources. The competitive landscape describes the project before implementation on 2026-10-08; use the README and LICENSE for current features and licensing. Public research informs product decisions, but does not establish CampusTask adoption, measured time savings or regulatory compliance. Institutional templates require current original files and confirmation from the receiving institution.

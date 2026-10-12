@@ -1,8 +1,8 @@
-# CampusCollab Product and Implementation Plan
+# CampusTask Product and Implementation Plan
 
 [简体中文](PLAN.md) · [Documentation](docs/README.md) · [Market research](docs/research/market-research.en.md) · [Competitive landscape](docs/research/competitive-landscape.en.md) · [International adoption](docs/research/international-adoption.en.md)
 
-Version 1.7. Updated 2026-10-09. **Bilingual tasks, rosters, submission review, completion exports and institution administration are implemented, and the source is published on GitHub.** See [verification](docs/verification.md) for the test scope and [Actions](https://github.com/tswawa/CampusCollab/actions) for each commit's CI results. Institutional use, live email delivery, current institutional template acceptance and manual screen-reader checks remain unverified. Responsibilities and exclusions are documented in [architecture](docs/ARCHITECTURE.md).
+Version 1.7. Updated 2026-10-09. **Bilingual tasks, rosters, submission review, completion exports and institution administration are implemented, and the source is published on GitHub.** See [verification](docs/verification.md) for the test scope and [Actions](https://github.com/tswawa/CampusTask/actions) for each commit's CI results. Institutional use, live email delivery, current institutional template acceptance and manual screen-reader checks remain unverified. Responsibilities and exclusions are documented in [architecture](docs/ARCHITECTURE.md).
 
 The objective is to develop the existing multi-participant task system into a self-hosted open-source product. Starting with task publication or an imported roster, it should support participation, evidence collection, corrections, review, closeout and handover, producing a roster, evidence and confirmation records that match. Initial users are departments, campus service teams and community engagement programs with recurring work, together with campus developers who can operate and adapt the product.
 
@@ -10,7 +10,7 @@ The project uses AGPL, with the same feature scope in Chinese and English. All c
 
 ## Product scope and release goals
 
-The project is named 高校任务协作平台 in Chinese and CampusCollab (Campus Collaboration) in English. Its repository is [tswawa/CampusCollab](https://github.com/tswawa/CampusCollab), and its npm package name is `campuscollab`. Each institution deploys independently under its own domain.
+The project is named 校园任务通 in Chinese and CampusTask in English. Its repository is [tswawa/CampusTask](https://github.com/tswawa/CampusTask), and its npm package name is `campustask`. Each institution deploys independently under its own domain.
 
 | Release level | Required outcome | Current status |
 | --- | --- | --- |
@@ -188,7 +188,7 @@ Include runtime SQL migration files. Operational commands must run inside the fi
 
 The project uses `AGPL-3.0-only`, with aligned LICENSE, package metadata and NOTICE. ZVMS's original MIT notice is preserved in `LICENSES/ZVMS-MIT.txt`. Builds provide the corresponding `/source.zip` and license links. Default icons are project-created assets; see [asset notes](public/ASSETS.md) and the [dependency review](docs/dependency-review.md). Institution names in screenshots are examples and do not imply use or endorsement.
 
-The GitHub repository includes bilingual README files, fictional demo data, feature boundaries, screenshots, installation and upgrades, a template contribution example, issue entry points, security reporting instructions and CI. [The source is public](https://github.com/tswawa/CampusCollab), and private vulnerability reporting is enabled; see [SECURITY](SECURITY.md). CI runs on pushes and pull requests, with results recorded per commit. Source publication does not establish production deployment or institutional adoption.
+The GitHub repository includes bilingual README files, fictional demo data, feature boundaries, screenshots, installation and upgrades, a template contribution example, issue entry points, security reporting instructions and CI. [The source is public](https://github.com/tswawa/CampusTask), and private vulnerability reporting is enabled; see [SECURITY](SECURITY.md). CI runs on pushes and pull requests, with results recorded per commit. Source publication does not establish production deployment or institutional adoption.
 
 ## Risks and recovery
 
@@ -215,7 +215,7 @@ The GitHub repository includes bilingual README files, fictional demo data, feat
 - [x] Administration interface: One-time setup, institution-wide language, desktop sidebar and mobile drawer, roster workspace, actual statistics, separate notification and data settings, and paginated closed-task records are implemented.
 - [ ] T03: Generic templates and historical institutional previews are implemented. Current original forms and the target institution's field, evidence, naming and acceptance requirements still need confirmation.
 - [ ] T24: Manual screen-reader checks remain necessary for critical paths on the target browser and assistive-technology combinations.
-- [x] T26: Source, bilingual documentation, screenshots, contribution channels and private vulnerability reporting are available. GitHub Actions is configured; check [Actions](https://github.com/tswawa/CampusCollab/actions) for each commit's results.
+- [x] T26: Source, bilingual documentation, screenshots, contribution channels and private vulnerability reporting are available. GitHub Actions is configured; check [Actions](https://github.com/tswawa/CampusTask/actions) for each commit's results.
 - [ ] T27: Check the release commit, build and corresponding source, and resolve the remaining acceptance items before release.
 - [ ] T30: Official identity and external-result adapters need concrete interfaces or template contracts. Official SSO is not implemented.
 - [ ] Real-world validation: Institutional use, live SMTP delivery, current template acceptance, large-scale performance and time savings have not been measured.

@@ -1,4 +1,4 @@
-# CampusCollab 架构与项目边界
+# CampusTask 架构与项目边界
 
 本文说明运行链路、模块职责和项目边界。测试范围见[验证说明](verification.md)，部署步骤见[运维说明](operations.md)。
 
@@ -97,7 +97,7 @@ flowchart LR
 
 ## English summary
 
-CampusCollab is one native Node.js application with one SQLite database per institution. Vue, Pinia, Vant and the routes under `src/mobile` form the production UI; Fastify services own authorization and workflow rules. `shared` defines portable DTOs and versioned templates.
+CampusTask is one native Node.js application with one SQLite database per institution. Vue, Pinia, Vant and the routes under `src/mobile` form the production UI; Fastify services own authorization and workflow rules. `shared` defines portable DTOs and versioned templates.
 
 Workflow closure, cancellation, participant outcome, durable admission and evidence confirmation are separate facts. Aggregated task progress is for display and must not block explicit roster correction in an open workflow. Student self-signup remains subject to its deadline. Files retain their original ownership across references; snapshots are immutable and exports include only explicitly confirmed evidence.
 

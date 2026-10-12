@@ -1,6 +1,6 @@
 {
-  "name": "高校任务协作平台",
-  "short_name": "CampusCollab",
+  "name": "校园任务通",
+  "short_name": "CampusTask",
   "description": "任务发布、人员参与、材料审核与结项归档",
   "start_url": "/",
   "icons": [

@@ -1,7 +1,7 @@
-# CampusCollab public assets
+# CampusTask public assets
 
 The 2026-10-09 `brand.svg` is an original geometric drawing created for
-CampusCollab: two connected collaboration nodes and a check mark. It contains
+CampusTask: two connected collaboration nodes and a check mark. It contains
 no fonts, institution emblems or external artwork. The SVG and its generated
 PNG, JPEG, ICO and monochrome SVG variants are distributed under this project's
 AGPL-3.0-only license; see [LICENSE](../LICENSE).
